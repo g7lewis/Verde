@@ -60,6 +60,11 @@ function LocationMarker({ onSelectLocation }: { onSelectLocation: (lat: number, 
 export default function Home() {
   const [center, setCenter] = useState<[number, number] | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [layers, setLayers] = useState({
+    air: true,
+    water: true,
+    pollution: true,
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [isPinDialogOpen, setIsPinDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -159,6 +164,24 @@ export default function Home() {
             <MapController center={center} />
             <LocationMarker onSelectLocation={(lat, lng) => handleLocationSelect(lat, lng)} />
 
+            {/* Visual Layers (Heatmap/Circle Overlays Simulation) */}
+            {layers.air && center && (
+              <TileLayer
+                url="https://tiles.waqi.info/tiles/usepa-aqi/{z}/{x}/{y}.png?token=demo"
+                opacity={0.4}
+              />
+            )}
+            
+            {/* Simulation of Water Quality / Pollution with Circles if data available */}
+            {layers.pollution && pins?.filter(p => p.type === 'pollution').map(p => (
+              <L.Circle 
+                key={`pollute-layer-${p.id}`}
+                center={[p.lat, p.lng]}
+                pathOptions={{ color: 'red', fillColor: 'red', fillOpacity: 0.2 }}
+                radius={500}
+              />
+            ))}
+
             {/* Current Selection Marker */}
             {selectedLocation && (
               <Marker position={[selectedLocation.lat, selectedLocation.lng]} icon={icons.user}>
@@ -210,6 +233,32 @@ export default function Home() {
           </div>
 
           <div className="flex gap-3">
+            <div className="flex gap-1 bg-white/90 backdrop-blur rounded-xl p-1 shadow-lg border border-white/50 pointer-events-auto">
+              <Button 
+                variant={layers.air ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setLayers(l => ({...l, air: !l.air}))}
+                className="rounded-lg h-8 px-3 text-xs"
+              >
+                Air
+              </Button>
+              <Button 
+                variant={layers.water ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setLayers(l => ({...l, water: !l.water}))}
+                className="rounded-lg h-8 px-3 text-xs"
+              >
+                Water
+              </Button>
+              <Button 
+                variant={layers.pollution ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setLayers(l => ({...l, pollution: !l.pollution}))}
+                className="rounded-lg h-8 px-3 text-xs"
+              >
+                Pollution
+              </Button>
+            </div>
             <Button 
               onClick={handleRandomLocation}
               variant="secondary"
