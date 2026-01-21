@@ -48,7 +48,7 @@ function MapController({ center }: { center: [number, number] | null }) {
 
 function LocationMarker({ onSelectLocation }: { onSelectLocation: (lat: number, lng: number) => void }) {
   useMapEvents({
-    click(e) {
+    click(e: L.LeafletMouseEvent) {
       onSelectLocation(e.latlng.lat, e.latlng.lng);
     },
   });
