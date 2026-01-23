@@ -19,7 +19,7 @@ export function EsriLayers({ showEpaEcho, showGemsWater }: EsriLayersProps) {
         opacity: 0.7,
         layers: [0],
         layerDefs: {
-          0: "FAC_MAJOR_FLAG = 'Y' OR FAC_QTRS_WITH_NC > 0 OR FAC_COMPLIANCE_STATUS = 'Significant Violation'"
+          0: "FAC_MAJOR_FLAG = 'Y' OR FAC_QTRS_WITH_NC > 0 OR FAC_COMPLIANCE_STATUS = 'Significant Violation' OR FAC_NAICS LIKE '324%' OR FAC_NAICS LIKE '562%' OR FAC_NAICS LIKE '325%' OR FAC_NAICS LIKE '221%' OR FAC_NAICS LIKE '331%' OR FAC_NAICS LIKE '332%'"
         }
       });
       epaLayer.addTo(map);
