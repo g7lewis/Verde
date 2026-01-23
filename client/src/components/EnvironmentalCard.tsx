@@ -74,7 +74,7 @@ export function EnvironmentalCard({ data, lat, lng, isLoading }: EnvironmentalCa
     setAnswer("");
     
     try {
-      const response = await apiRequest("/api/ask", "POST", {
+      const response = await apiRequest("POST", "/api/ask", {
         lat,
         lng,
         location: data.location,
