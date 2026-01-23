@@ -18,11 +18,12 @@ interface PinDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   location: { lat: number; lng: number } | null;
+  onPinCreated?: () => void;
 }
 
 type PinType = "animal" | "pollution" | "trail" | "other";
 
-export function PinDialog({ open, onOpenChange, location }: PinDialogProps) {
+export function PinDialog({ open, onOpenChange, location, onPinCreated }: PinDialogProps) {
   const [type, setType] = useState<PinType>("animal");
   const [description, setDescription] = useState("");
   const createPin = useCreatePin();
@@ -41,6 +42,7 @@ export function PinDialog({ open, onOpenChange, location }: PinDialogProps) {
         onOpenChange(false);
         setDescription("");
         setType("animal");
+        onPinCreated?.();
       }
     });
   };

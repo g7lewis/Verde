@@ -8,6 +8,9 @@ import { usePins } from "@/hooks/use-pins";
 import { useAnalyzeLocation } from "@/hooks/use-analysis";
 import { EnvironmentalCard } from "@/components/EnvironmentalCard";
 import { PinDialog } from "@/components/PinDialog";
+import { GamificationPanel } from "@/components/GamificationPanel";
+import { BadgeNotification } from "@/components/BadgeNotification";
+import { useGamification } from "@/hooks/use-gamification";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -71,6 +74,7 @@ export default function Home() {
 
   const { data: pins } = usePins();
   const analyze = useAnalyzeLocation();
+  const { stats, levelInfo, newBadges, recordPinDrop, recordExploration, clearNewBadges } = useGamification();
 
   // Initialize with user location
   useEffect(() => {
@@ -134,6 +138,7 @@ export default function Home() {
   const handleLocationSelect = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng });
     analyze.mutate({ lat, lng });
+    recordExploration();
   };
 
   const handleDropPin = () => {
@@ -146,6 +151,9 @@ export default function Home() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-background">
+      {/* Badge Notification */}
+      <BadgeNotification badges={newBadges} onDismiss={clearNewBadges} />
+      
       {/* Map Layer */}
       <div className="absolute inset-0 z-0">
         {center && (
@@ -283,6 +291,11 @@ export default function Home() {
             </Button>
           </div>
         </div>
+        
+        {/* Gamification Panel - Top Right */}
+        <div className="absolute top-24 right-4 md:right-6 z-20 pointer-events-auto w-64">
+          <GamificationPanel stats={stats} levelInfo={levelInfo} />
+        </div>
 
         {/* Middle/Bottom: Analysis Card */}
         <div className="flex-1 flex items-end md:items-start md:justify-end p-4 md:p-6 pointer-events-none">
@@ -341,6 +354,7 @@ export default function Home() {
         open={isPinDialogOpen} 
         onOpenChange={setIsPinDialogOpen}
         location={selectedLocation}
+        onPinCreated={recordPinDrop}
       />
     </div>
   );
