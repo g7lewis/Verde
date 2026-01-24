@@ -135,16 +135,90 @@ export default function Home() {
   };
 
   const handleRandomLocation = () => {
-    // Generate random coordinates (land-biased simplistic approach or completely random)
-    // Let's pick from a few predefined interesting eco-locations to make it "fun"
-    const ecoSpots = [
+    // Diverse land locations around the world - cities, natural wonders, and interesting places
+    const landLocations: [number, number][] = [
+      // North America
+      [40.7128, -74.0060], // New York City
+      [34.0522, -118.2437], // Los Angeles
+      [41.8781, -87.6298], // Chicago
+      [37.7749, -122.4194], // San Francisco
+      [47.6062, -122.3321], // Seattle
+      [25.7617, -80.1918], // Miami
       [44.4280, -110.5885], // Yellowstone
+      [36.1070, -112.1130], // Grand Canyon
+      [45.4215, -75.6972], // Ottawa
+      [49.2827, -123.1207], // Vancouver
+      [19.4326, -99.1332], // Mexico City
+      [20.6534, -87.0736], // Tulum
+      // South America
+      [-22.9068, -43.1729], // Rio de Janeiro
+      [-34.6037, -58.3816], // Buenos Aires
+      [-33.4489, -70.6693], // Santiago
+      [-12.0464, -77.0428], // Lima
       [-3.4653, -62.2159], // Amazon Rainforest
-      [35.3606, 138.7274], // Mt Fuji
-      [-16.5004, -151.7415], // Bora Bora
+      [-13.1631, -72.5450], // Machu Picchu
+      [-27.1127, -109.3497], // Easter Island
+      // Europe
+      [51.5074, -0.1278], // London
+      [48.8566, 2.3522], // Paris
+      [52.5200, 13.4050], // Berlin
+      [41.9028, 12.4964], // Rome
+      [40.4168, -3.7038], // Madrid
+      [55.7558, 37.6173], // Moscow
+      [59.3293, 18.0686], // Stockholm
+      [52.3676, 4.9041], // Amsterdam
+      [47.4979, 19.0402], // Budapest
+      [50.0755, 14.4378], // Prague
       [64.1466, -21.9426], // Reykjavik
+      [60.1699, 24.9384], // Helsinki
+      [46.2044, 6.1432], // Geneva
+      // Asia
+      [35.6762, 139.6503], // Tokyo
+      [31.2304, 121.4737], // Shanghai
+      [22.3193, 114.1694], // Hong Kong
+      [1.3521, 103.8198], // Singapore
+      [13.7563, 100.5018], // Bangkok
+      [28.6139, 77.2090], // New Delhi
+      [19.0760, 72.8777], // Mumbai
+      [35.3606, 138.7274], // Mt Fuji
+      [27.1751, 78.0421], // Agra (Taj Mahal)
+      [37.5665, 126.9780], // Seoul
+      [25.0330, 121.5654], // Taipei
+      [39.9042, 116.4074], // Beijing
+      // Africa
+      [-33.9249, 18.4241], // Cape Town
+      [-1.2921, 36.8219], // Nairobi
+      [30.0444, 31.2357], // Cairo
+      [-3.3869, 36.6830], // Mt Kilimanjaro
+      [15.5007, 32.5599], // Khartoum
+      [-19.0154, 29.1549], // Victoria Falls
+      [33.9716, -6.8498], // Rabat
+      // Oceania
+      [-33.8688, 151.2093], // Sydney
+      [-37.8136, 144.9631], // Melbourne
+      [-41.2865, 174.7762], // Wellington
+      [-17.7134, 178.0650], // Fiji
+      [-16.5004, -151.7415], // Bora Bora
+      [-43.5321, 172.6362], // Christchurch
+      [-27.4698, 153.0251], // Brisbane
+      // Middle East
+      [25.2048, 55.2708], // Dubai
+      [24.7136, 46.6753], // Riyadh
+      [32.0853, 34.7818], // Tel Aviv
+      [41.0082, 28.9784], // Istanbul
+      [29.9792, 31.1342], // Giza Pyramids
+      // Natural Wonders
+      [-8.4095, 115.1889], // Bali
+      [27.9881, 86.9250], // Mt Everest base
+      [-25.3444, 131.0369], // Uluru
+      [9.1021, -79.4023], // Panama Canal
+      [36.4566, 25.3772], // Santorini
+      [-22.9519, -43.2105], // Sugarloaf Mountain
+      [44.4279, 7.3733], // French Alps
+      [46.5197, 6.6323], // Swiss Alps
     ];
-    const random = ecoSpots[Math.floor(Math.random() * ecoSpots.length)] as [number, number];
+    
+    const random = landLocations[Math.floor(Math.random() * landLocations.length)];
     setCenter(random);
     handleLocationSelect(random[0], random[1]);
   };
