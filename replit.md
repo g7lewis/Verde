@@ -44,6 +44,15 @@ Preferred communication style: Simple, everyday language.
 - `GET /api/pins`: Lists all community pins
 - `POST /api/pins`: Creates a new pin
 
+### WAQI (World Air Quality Index) Integration
+The `/api/analyze` endpoint now queries real-time AQI data:
+- **Utility**: `server/waqiQuery.ts` handles the WAQI API query
+- **Endpoint**: `https://api.waqi.info/feed/geo:{lat};{lng}/`
+- **Data returned**: AQI value, category (Good/Moderate/Unhealthy), dominant pollutant, monitoring station name
+- **Frontend display**: Color-coded AQI badge in EnvironmentalCard (green/yellow/orange/red based on severity)
+- **Score influence**: Real AQI data directly influences the AI-generated airQuality score
+- **Token**: Uses `WAQI_API_TOKEN` env var (falls back to demo token)
+
 ### EPA ECHO Integration
 The `/api/analyze` endpoint queries the EPA ECHO ArcGIS service for regulated facilities within a 10-mile radius:
 - **Utility**: `server/epaQuery.ts` handles the API query

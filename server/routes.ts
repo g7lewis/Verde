@@ -5,6 +5,7 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import OpenAI from "openai";
 import { queryNearbyEpaFacilities } from "./epaQuery";
+import { queryAirQuality, aqiToScore, getAqiCategory } from "./waqiQuery";
 
 // Reverse geocode coordinates to get accurate location name
 async function reverseGeocode(lat: number, lng: number): Promise<string> {
@@ -108,16 +109,49 @@ export async function registerRoutes(
     try {
       const { lat, lng } = api.analysis.analyze.input.parse(req.body);
 
-      // Get accurate location name via reverse geocoding (in parallel with EPA query)
-      const [locationName, epaData] = await Promise.all([
+      // Get accurate location name via reverse geocoding (in parallel with EPA and WAQI queries)
+      const [locationName, epaData, aqiData] = await Promise.all([
         reverseGeocode(lat, lng),
-        queryNearbyEpaFacilities(lat, lng, 10)
+        queryNearbyEpaFacilities(lat, lng, 10),
+        queryAirQuality(lat, lng)
       ]);
       
-      console.log(`Location: ${locationName}, EPA query: ${epaData.totalFacilities} facilities found`);
+      console.log(`Location: ${locationName}, EPA: ${epaData.totalFacilities} facilities, AQI: ${aqiData.aqi}`);
       
-      // Build context about nearby facilities
+      // Build context about nearby facilities and air quality
       let facilityContext = "";
+      let airQualityContext = "";
+      
+      // Add real-time air quality data if available
+      if (aqiData.aqi !== null) {
+        const aqiCategory = getAqiCategory(aqiData.aqi);
+        const suggestedScore = aqiToScore(aqiData.aqi);
+        const pollutantInfo = Object.entries(aqiData.pollutants)
+          .filter(([_, v]) => v !== undefined)
+          .map(([k, v]) => `${k.toUpperCase()}: ${v}`)
+          .join(", ");
+        
+        // Only include score guidance if we have a valid calculated score
+        const scoreGuidance = suggestedScore !== null 
+          ? `IMPORTANT: Your airQuality score MUST be close to ${suggestedScore} (derived from real AQI of ${aqiData.aqi}).
+AQI 0-50 = Good (score 90-100), AQI 51-100 = Moderate (score 60-89), AQI 101-150 = Unhealthy for Sensitive (score 40-59), AQI 151-200 = Unhealthy (score 25-39), AQI 201+ = Very Unhealthy/Hazardous (score <25).`
+          : `Use the AQI value of ${aqiData.aqi} to inform your airQuality score.`;
+        
+        airQualityContext = `
+REAL-TIME AIR QUALITY DATA:
+- Current AQI: ${aqiData.aqi} (${aqiCategory})
+- Nearest monitoring station: ${aqiData.stationName || "Unknown"}
+- Dominant pollutant: ${aqiData.dominantPollutant?.toUpperCase() || "Not specified"}
+- Pollutant readings: ${pollutantInfo || "Not available"}
+- Last updated: ${aqiData.lastUpdated || "Unknown"}
+
+${scoreGuidance}
+`;
+      } else {
+        airQualityContext = `
+AIR QUALITY DATA: No real-time AQI data available for this location. Estimate based on EPA facility data and general knowledge.
+`;
+      }
       if (epaData.totalFacilities > 0) {
         facilityContext = `
 REAL EPA DATA (within 10 miles):
@@ -136,6 +170,7 @@ EPA DATA: No regulated industrial facilities found within 10 miles. This is a po
       const prompt = `
 Analyze the environmental quality for the location: "${locationName}" (Coordinates: ${lat}, ${lng}).
 This location has been verified via reverse geocoding - use this exact location name in your response.
+${airQualityContext}
 ${facilityContext}
 
 Provide a JSON response with the following fields:
@@ -189,10 +224,20 @@ Return ONLY valid JSON.
         topIndustries,
       };
       
-      // Merge AI response with server-computed EPA data
+      // Build AQI context if available
+      const aqiContext = aqiData.aqi !== null ? {
+        aqi: aqiData.aqi,
+        category: getAqiCategory(aqiData.aqi),
+        station: aqiData.stationName,
+        dominantPollutant: aqiData.dominantPollutant,
+        lastUpdated: aqiData.lastUpdated,
+      } : null;
+      
+      // Merge AI response with server-computed data
       res.json({
         ...aiData,
         epaContext,
+        aqiContext,
       });
 
     } catch (error) {
