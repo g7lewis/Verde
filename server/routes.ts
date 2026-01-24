@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import OpenAI from "openai";
+import { queryNearbyEpaFacilities } from "./epaQuery";
 
 // Initialize OpenAI with Replit AI Integrations env vars
 const openai = new OpenAI({
@@ -40,32 +41,54 @@ export async function registerRoutes(
     try {
       const { lat, lng } = api.analysis.analyze.input.parse(req.body);
 
-      // Construct a prompt for the AI
-      // In a real app, we might reverse geocode here to get the city name, 
-      // but we can also just ask the AI to estimate based on the coordinates if it knows them, 
-      // or more likely, we just simulate the "vibe" generation for this demo if the AI doesn't know specific lat/lng.
-      // However, GPT-4o often has good geographical knowledge.
+      // Query real EPA facility data for this location
+      const epaData = await queryNearbyEpaFacilities(lat, lng, 10);
+      console.log(`EPA query for (${lat}, ${lng}): ${epaData.totalFacilities} facilities found`);
+      
+      // Build context about nearby facilities
+      let facilityContext = "";
+      if (epaData.totalFacilities > 0) {
+        facilityContext = `
+REAL EPA DATA (within 10 miles):
+- Total regulated facilities: ${epaData.totalFacilities}
+- Major emitters: ${epaData.majorFacilities}
+- Facilities with violations: ${epaData.facilitiesWithViolations}
+- Industry breakdown: ${Object.entries(epaData.industryBreakdown).map(([k, v]) => `${k}: ${v}`).join(", ")}
+- Nearest facilities: ${epaData.nearbyFacilities.slice(0, 5).map(f => `${f.name} (${f.type}, ${f.distance.toFixed(1)} mi${f.hasViolation ? ", HAS VIOLATIONS" : ""})`).join("; ")}
+
+Use this real data to inform your pollution and air quality scores. More facilities, major emitters, and violations should lower scores.`;
+      } else {
+        facilityContext = `
+EPA DATA: No regulated industrial facilities found within 10 miles. This is a positive indicator for pollution/air quality scores.`;
+      }
       
       const prompt = `
-        Analyze the environmental quality for the location at Latitude: ${lat}, Longitude: ${lng}.
-        If you don't know the exact specific street location, estimate based on the general area (city/region).
-        Provide a JSON response with the following fields:
-        - location: A readable name for the location (e.g., "Central Park, NY")
-        - summary: A 2-3 sentence summary of the environmental vibe.
-        - scores: An object with numeric scores (0-100) for:
-          - airQuality (100 is best)
-          - waterQuality (100 is best)
-          - walkability (100 is best)
-          - greenSpace (100 is best)
-          - pollution (100 is cleanest/least pollution)
-        
-        Return ONLY valid JSON.
+Analyze the environmental quality for the location at Latitude: ${lat}, Longitude: ${lng}.
+If you don't know the exact specific street location, estimate based on the general area (city/region).
+${facilityContext}
+
+Provide a JSON response with the following fields:
+- location: A readable name for the location (e.g., "Central Park, NY")
+- summary: A 2-3 sentence summary of the environmental vibe. If EPA facilities were found, mention the industrial context.
+- scores: An object with numeric scores (0-100) for:
+  - airQuality (100 is best) - factor in nearby major emitters
+  - waterQuality (100 is best)
+  - walkability (100 is best)
+  - greenSpace (100 is best)
+  - pollution (100 is cleanest/least pollution) - directly affected by EPA facility count and violations
+- epaContext: An object with:
+  - totalFacilities: number of EPA-regulated facilities nearby
+  - majorEmitters: number of major emitters
+  - facilitiesWithViolations: number with compliance issues
+  - topIndustries: array of top 3 industry types present (or empty array if none)
+
+Return ONLY valid JSON.
       `;
 
       const response = await openai.chat.completions.create({
         model: "gpt-5.1",
         messages: [
-          { role: "system", content: "You are an environmental data analyst. Return JSON only." },
+          { role: "system", content: "You are an environmental data analyst. Use the provided EPA data to generate accurate, data-driven scores. Return JSON only." },
           { role: "user", content: prompt }
         ],
         response_format: { type: "json_object" },
@@ -74,12 +97,26 @@ export async function registerRoutes(
       const content = response.choices[0].message.content;
       if (!content) throw new Error("No response from AI");
 
-      const data = JSON.parse(content);
+      const aiData = JSON.parse(content);
       
-      // Validate structure roughly (or let the frontend handle it, but better here)
-      // We'll trust the AI followed the JSON structure for the MVP
+      // Build deterministic epaContext from actual EPA query results
+      const topIndustries = Object.entries(epaData.industryBreakdown)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([industry]) => industry);
       
-      res.json(data);
+      const epaContext = {
+        totalFacilities: epaData.totalFacilities,
+        majorEmitters: epaData.majorFacilities,
+        facilitiesWithViolations: epaData.facilitiesWithViolations,
+        topIndustries,
+      };
+      
+      // Merge AI response with server-computed EPA data
+      res.json({
+        ...aiData,
+        epaContext,
+      });
 
     } catch (error) {
       console.error("Analysis error:", error);

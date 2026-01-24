@@ -39,9 +39,18 @@ Preferred communication style: Simple, everyday language.
 
 ### API Structure
 - Routes defined declaratively in `shared/routes.ts` with Zod schemas
-- `POST /api/analyze`: Takes lat/lng, returns AI-generated environmental scores
+- `POST /api/analyze`: Takes lat/lng, queries EPA ECHO for nearby facilities, returns AI-generated environmental scores enhanced with real regulatory data
+- `POST /api/ask`: Takes lat/lng, location name, and question - returns AI-powered answer about the location
 - `GET /api/pins`: Lists all community pins
 - `POST /api/pins`: Creates a new pin
+
+### EPA ECHO Integration
+The `/api/analyze` endpoint queries the EPA ECHO ArcGIS service for regulated facilities within a 10-mile radius:
+- **Utility**: `server/epaQuery.ts` handles the API query
+- **Fields**: FAC_NAME, FAC_NAICS_CODES, FAC_MAJOR_FLAG, FAC_CURR_SNC_FLG, FAC_QTRS_IN_NC
+- **Data returned**: Total facilities, major emitters, facilities with violations, industry breakdown
+- This real data is passed to the AI to generate more accurate environmental scores
+- The frontend displays EPA context in the EnvironmentalCard when facilities are found
 
 ### Key Design Decisions
 
