@@ -67,10 +67,19 @@ The `/api/analyze` endpoint queries Climate TRACE v6 API for global emissions da
 - **Endpoint**: `https://api.climatetrace.org/v6/assets?countries={ISO3}&year=2022&limit=500`
 - **Data returned**: Emission sources, total CO2e emissions, sector breakdown, top emitters
 - **Country detection**: Uses reverse geocoding to get ISO2 code, then converts to ISO3 using complete mapping
-- **Response parsing**: API returns `{ assets: [...] }` with each asset containing `Id`, `Name`, `Sector`, `EmissionsSummary`
+- **Response parsing**: API returns GeoJSON with `{ assets: [...] }`, each asset containing `Id`, `Name`, `Sector`, `Geometry`, `EmissionsSummary`
+- **Coordinate extraction**: Uses `geometry.coordinates` as [lng, lat], with fallback to `lat`/`lng` fields
 - **Emissions extraction**: From `EmissionsSummary[].Gas === 'co2e_100yr'` → `EmissionsQuantity`
 - **Frontend display**: Emerald-colored section in EnvironmentalCard showing sources count, total emissions (formatted as K/M/B), sector breakdown badges, and top 3 emitters
-- **Note**: Climate TRACE provides country-level asset data, so the CO2 toggle in layer controls is a UI state indicator rather than a map overlay
+
+### Emissions Sources Map Layer
+When the CO2 layer is toggled on, emission point sources are displayed on the map:
+- **API Endpoint**: `GET /api/emissions-sources?lat={lat}&lng={lng}&radius={km}`
+- **Query function**: `queryClimateTraceSourcesForMap()` filters by haversine distance within radius
+- **Map display**: CircleMarker components with sector-based colors (power=purple, oil&gas=orange, manufacturing=cyan, etc.)
+- **Size scaling**: Circle radius uses `log10(emissions) * 3` (min 5px, max 20px) for visual hierarchy
+- **Popup content**: Source name, sector with color indicator, emissions in tonnes CO2e/yr
+- **Default radius**: 150km from current map center
 
 ### Key Design Decisions
 
