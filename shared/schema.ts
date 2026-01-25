@@ -58,6 +58,36 @@ export const analysisResponseSchema = z.object({
     greenSpace: scoreDetailSchema,
     pollution: scoreDetailSchema,
   }).optional(),
+  epaContext: z.object({
+    totalFacilities: z.number(),
+    majorEmitters: z.number(),
+    facilitiesWithViolations: z.number(),
+    topIndustries: z.array(z.string()),
+  }).nullable().optional(),
+  aqiContext: z.object({
+    aqi: z.number(),
+    category: z.string(),
+    station: z.string().nullable(),
+    dominantPollutant: z.string().nullable(),
+    lastUpdated: z.string().nullable(),
+  }).nullable().optional(),
+  climateTraceContext: z.object({
+    sourcesCount: z.number(),
+    totalEmissions: z.number(),
+    totalEmissionsFormatted: z.string(),
+    topSources: z.array(z.object({
+      name: z.string(),
+      sector: z.string(),
+      emissions: z.number().nullable(),
+      emissionsFormatted: z.string().nullable(),
+    })),
+    sectorBreakdown: z.array(z.object({
+      sector: z.string(),
+      count: z.number(),
+      emissions: z.number(),
+      emissionsFormatted: z.string(),
+    })),
+  }).nullable().optional(),
 });
 
 export type AnalysisResponse = z.infer<typeof analysisResponseSchema>;

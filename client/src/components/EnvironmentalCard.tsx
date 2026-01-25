@@ -503,9 +503,9 @@ Explore environmental data at Verde`;
                   <div className="text-xs text-emerald-700 font-medium mb-1">Top Emitters:</div>
                   <div className="space-y-1">
                     {data.climateTraceContext.topSources.slice(0, 3).map((source, i) => (
-                      <div key={i} className="text-xs text-muted-foreground flex justify-between">
-                        <span className="truncate flex-1" title={source.name}>{source.name}</span>
-                        <span className="ml-2 text-emerald-700 font-medium">{source.emissionsFormatted || 'N/A'}</span>
+                      <div key={i} className="text-xs text-muted-foreground">
+                        <span className="text-foreground">{source.name}</span>
+                        <span className="text-emerald-700 font-medium ml-1">({source.emissionsFormatted || 'N/A'})</span>
                       </div>
                     ))}
                   </div>
