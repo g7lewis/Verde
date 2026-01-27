@@ -7,6 +7,7 @@ import OpenAI from "openai";
 import { queryNearbyEpaFacilities } from "./epaQuery";
 import { queryAirQuality, aqiToScore, getAqiCategory } from "./waqiQuery";
 import { queryClimateTraceSources, queryClimateTraceSourcesForMap, formatEmissions, getSectorLabel, ClimateTraceSource } from "./climateTraceQuery";
+import { queryLandCover } from "./landCoverQuery";
 
 // Reverse geocode coordinates to get accurate location name
 async function reverseGeocode(lat: number, lng: number): Promise<string> {
@@ -110,15 +111,16 @@ export async function registerRoutes(
     try {
       const { lat, lng } = api.analysis.analyze.input.parse(req.body);
 
-      // Get accurate location name via reverse geocoding (in parallel with EPA, WAQI, and Climate TRACE queries)
-      const [locationName, epaData, aqiData, climateData] = await Promise.all([
+      // Get accurate location name via reverse geocoding (in parallel with EPA, WAQI, Climate TRACE, and Land Cover queries)
+      const [locationName, epaData, aqiData, climateData, landCoverData] = await Promise.all([
         reverseGeocode(lat, lng),
         queryNearbyEpaFacilities(lat, lng, 10),
         queryAirQuality(lat, lng),
-        queryClimateTraceSources(lat, lng, 50)
+        queryClimateTraceSources(lat, lng, 50),
+        queryLandCover(lat, lng, 1000) // 1km radius for land cover analysis
       ]);
       
-      console.log(`Location: ${locationName}, EPA: ${epaData.totalFacilities} facilities, AQI: ${aqiData.aqi}, Climate TRACE: ${climateData.sources.length} sources`);
+      console.log(`Location: ${locationName}, EPA: ${epaData.totalFacilities} facilities, AQI: ${aqiData.aqi}, Climate TRACE: ${climateData.sources.length} sources, Land Cover: ${landCoverData.dominantClass}`);
       
       // Build context about nearby facilities and air quality
       let facilityContext = "";
@@ -282,12 +284,24 @@ Return ONLY valid JSON.
           })),
       } : null;
       
+      // Build Land Cover context if available
+      const landCoverContext = landCoverData.totalPixels > 0 ? {
+        classes: landCoverData.classes.slice(0, 6),
+        dominantClass: landCoverData.dominantClass,
+        treePercentage: landCoverData.treePercentage,
+        builtPercentage: landCoverData.builtPercentage,
+        waterPercentage: landCoverData.waterPercentage,
+        cropPercentage: landCoverData.cropPercentage,
+        vegetationPercentage: landCoverData.vegetationPercentage,
+      } : null;
+      
       // Merge AI response with server-computed data
       res.json({
         ...aiData,
         epaContext,
         aqiContext,
         climateTraceContext,
+        landCoverContext,
       });
 
     } catch (error) {
