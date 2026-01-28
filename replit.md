@@ -70,7 +70,8 @@ The `/api/analyze` endpoint queries Climate TRACE v6 API for global emissions da
 - **Response parsing**: API returns `{ assets: [...] }`, each asset containing `Id`, `Name`, `Sector`, `Centroid`, `EmissionsSummary`
 - **Coordinate extraction**: Uses `Centroid.Geometry` as [lng, lat] array (note: Geometry is the array itself, not an object with coordinates)
 - **Emissions extraction**: From `EmissionsSummary[].Gas === 'co2e_100yr'` → `EmissionsQuantity`
-- **Frontend display**: Emerald-colored section in EnvironmentalCard showing sources count, total emissions (formatted as K/M/B), sector breakdown badges, and top 3 emitters
+- **Frontend display**: Emerald-colored section integrated into the Cleanliness score expandable details (ScoreRow component)
+- **Non-US scoring**: AI prompt instructs use of Climate TRACE data for pollution/cleanliness scoring when EPA data is unavailable (non-US locations)
 
 ### Emissions Sources Map Layer
 When the CO2 layer is toggled on, emission point sources are displayed on the map:
