@@ -35,6 +35,8 @@ Preferred communication style: Simple, everyday language.
 - **Migrations**: Drizzle Kit manages migrations in `/migrations` folder
 - **Current Tables**:
   - `pins`: Community-contributed location markers (lat, lng, type, description)
+  - `emissions_sources`: Pre-cached Climate TRACE data (~478,000 sources with lat/lng, sector, emissions)
+  - `email_subscribers`: Newsletter/alert subscribers
   - `conversations` and `messages`: Chat storage for AI integrations (available but not actively used)
 
 ### API Structure
@@ -61,27 +63,37 @@ The `/api/analyze` endpoint queries the EPA ECHO ArcGIS service for regulated fa
 - This real data is passed to the AI to generate more accurate environmental scores
 - The frontend displays EPA context in the EnvironmentalCard when facilities are found
 
-### Climate TRACE Integration
-The `/api/analyze` endpoint queries Climate TRACE v6 API for global emissions data:
-- **Utility**: `server/climateTraceQuery.ts` handles the API query
-- **Endpoint**: `https://api.climatetrace.org/v6/assets?countries={ISO3}&year=2022&limit=500`
-- **Data returned**: Emission sources, total CO2e emissions, sector breakdown, top emitters
-- **Country detection**: Uses reverse geocoding to get ISO2 code, then converts to ISO3 using complete mapping
-- **Response parsing**: API returns `{ assets: [...] }`, each asset containing `Id`, `Name`, `Sector`, `Centroid`, `EmissionsSummary`
-- **Coordinate extraction**: Uses `Centroid.Geometry` as [lng, lat] array (note: Geometry is the array itself, not an object with coordinates)
-- **Emissions extraction**: From `EmissionsSummary[].Gas === 'co2e_100yr'` → `EmissionsQuantity`
-- **Frontend display**: Emerald-colored section integrated into the Cleanliness score expandable details (ScoreRow component)
-- **Non-US scoring**: AI prompt instructs use of Climate TRACE data for pollution/cleanliness scoring when EPA data is unavailable (non-US locations)
+### Climate TRACE Integration (Database-backed)
+The application uses a pre-cached PostgreSQL database of Climate TRACE emissions data for fast queries:
+
+**Database Storage**:
+- **Table**: `emissions_sources` in PostgreSQL with ~478,000 sources from 17+ countries
+- **Schema**: sourceId, name, country (ISO3), sector, lat, lng, emissions (CO2e tonnes/yr)
+- **Indexes**: Composite index on (lat, lng) for spatial queries, plus country and sector indexes
+- **Import Script**: `server/importClimateTrace.ts` fetches from Climate TRACE API and populates database
+- **Priority Countries**: CHN, USA, IND, RUS, JPN, DEU, IRN, SAU, IDN, KOR, CAN, MEX, BRA, AUS, GBR, TUR, FRA, ITA, POL, THA
+
+**Query Functions** (in `server/climateTraceQuery.ts`):
+- `queryEmissionsFromDatabase()`: Returns top 50,000 emitters globally, sorted by emissions
+- `queryEmissionsNearLocation(lat, lng, radiusKm)`: Bounding box + haversine radius query for nearby sources
+- `getEmissionsDatabaseCount()`: Returns total sources in database for fallback logic
+
+**API Behavior**:
+- `/api/analyze`: Uses `queryEmissionsNearLocation()` when database has data, falls back to API otherwise
+- `/api/emissions-sources`: Uses database for global or viewport-filtered queries
+
+**Frontend Display**: Emerald-colored section in EnvironmentalCard showing emissions context
 
 ### Emissions Sources Map Layer
 When the CO2 layer is toggled on, emission point sources are displayed on the map:
-- **API Endpoint**: `GET /api/emissions-sources?lat={lat}&lng={lng}`
-- **Query function**: `queryClimateTraceSourcesForMap()` queries top 10 emitting countries in parallel
-- **Global coverage**: Fetches top 200 sources from each of CHN, USA, IND, RUS, JPN, DEU, IRN, SAU, IDN, KOR
+- **API Endpoint**: `GET /api/emissions-sources` with optional viewport params (minLat, maxLat, minLng, maxLng)
+- **Data Source**: PostgreSQL database with 478,000+ cached Climate TRACE sources
+- **Viewport Filtering**: When bounds provided, queries only sources in visible area using spatial indexes
+- **Global Mode**: Without bounds, returns top 50,000 emitters globally sorted by emissions
 - **Map display**: CircleMarker components with sector-based colors (power=purple, oil&gas=orange, manufacturing=cyan, etc.)
 - **Size scaling**: Circle radius uses `log10(emissions) * 3` (min 5px, max 20px) for visual hierarchy
 - **Popup content**: Source name, sector with color indicator, emissions in tonnes CO2e/yr
-- **Returns**: All 2000 sources globally (no filtering), sorted by emissions
+- **Performance**: Database queries with indexes are sub-second vs 10+ seconds for API calls
 
 ### Sentinel 2 Land Cover Integration
 The `/api/analyze` endpoint queries Sentinel 2 satellite land cover data:

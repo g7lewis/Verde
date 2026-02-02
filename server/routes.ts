@@ -469,15 +469,35 @@ Return ONLY valid JSON.
   });
 
   // Climate TRACE emissions sources for map display - from database
+  // Supports optional viewport filtering via minLat, maxLat, minLng, maxLng params
   app.get("/api/emissions-sources", async (req, res) => {
     try {
-      // Check if database has data, fallback to API if empty
       const dbCount = await getEmissionsDatabaseCount();
       
       let sources: ClimateTraceSource[];
       if (dbCount > 0) {
-        console.log(`Emissions sources: Using database (${dbCount} sources)`);
-        sources = await queryEmissionsFromDatabase();
+        // Check for viewport bounds
+        const minLat = parseFloat(req.query.minLat as string);
+        const maxLat = parseFloat(req.query.maxLat as string);
+        const minLng = parseFloat(req.query.minLng as string);
+        const maxLng = parseFloat(req.query.maxLng as string);
+        
+        if (!isNaN(minLat) && !isNaN(maxLat) && !isNaN(minLng) && !isNaN(maxLng)) {
+          // Viewport-based query for performance
+          console.log(`Emissions sources: Using database viewport query (${dbCount} total)`);
+          const centerLat = (minLat + maxLat) / 2;
+          const centerLng = (minLng + maxLng) / 2;
+          const radiusKm = Math.max(
+            Math.abs(maxLat - minLat) * 111 / 2,
+            Math.abs(maxLng - minLng) * 111 * Math.cos(centerLat * Math.PI / 180) / 2
+          ) * 1.5; // Add 50% buffer
+          const result = await queryEmissionsNearLocation(centerLat, centerLng, radiusKm);
+          sources = result.sources;
+        } else {
+          // Global query for full map
+          console.log(`Emissions sources: Using database (${dbCount} sources)`);
+          sources = await queryEmissionsFromDatabase();
+        }
       } else {
         console.log("Emissions sources: Database empty, falling back to API");
         const lat = parseFloat(req.query.lat as string) || 0;
