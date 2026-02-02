@@ -469,7 +469,7 @@ export async function queryEmissionsNearLocation(
         )
       )
       .orderBy(sql`emissions DESC NULLS LAST`)
-      .limit(100);
+      .limit(1000);
     
     const sources: ClimateTraceSource[] = results
       .filter(r => haversineDistance(lat, lng, r.lat, r.lng) <= radiusKm)

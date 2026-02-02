@@ -166,10 +166,21 @@ export default function Home() {
     const fetchEmissions = async () => {
       setLoadingEmissions(true);
       try {
-        const response = await fetch(`/api/emissions-sources?lat=${center[0]}&lng=${center[1]}&radius=150`);
+        // Use viewport-based filtering for better performance
+        // Approximate viewport bounds based on center (roughly 10 degrees each direction)
+        const latDelta = 10;
+        const lngDelta = 15;
+        const minLat = center[0] - latDelta;
+        const maxLat = center[0] + latDelta;
+        const minLng = center[1] - lngDelta;
+        const maxLng = center[1] + lngDelta;
+        
+        const response = await fetch(`/api/emissions-sources?minLat=${minLat}&maxLat=${maxLat}&minLng=${minLng}&maxLng=${maxLng}`);
         if (response.ok) {
           const data = await response.json();
-          setEmissionsSources(data.sources || []);
+          // Limit to top 500 sources for map performance
+          const sources = (data.sources || []).slice(0, 500);
+          setEmissionsSources(sources);
         }
       } catch (error) {
         console.error("Failed to fetch emissions sources:", error);
