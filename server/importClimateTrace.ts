@@ -2,15 +2,18 @@ import { db } from "./db";
 import { emissionsSources } from "@shared/schema";
 import { sql } from "drizzle-orm";
 
-// All countries with significant emissions sources (ISO3 codes)
-const ALL_COUNTRIES = [
-  // Top emitters
+// Priority countries for initial import (top emitters covering ~80% of global emissions)
+const PRIORITY_COUNTRIES = [
   "CHN", "USA", "IND", "RUS", "JPN", "DEU", "IRN", "SAU", "IDN", "KOR",
   "CAN", "MEX", "BRA", "AUS", "GBR", "TUR", "FRA", "ITA", "POL", "THA",
+];
+
+// Extended country list for full import
+const ALL_COUNTRIES = [
+  ...PRIORITY_COUNTRIES,
   "ZAF", "ESP", "VNM", "TWN", "MYS", "EGY", "PAK", "ARE", "NGA", "ARG",
   "KAZ", "IRQ", "VEN", "NLD", "PHL", "DZA", "UKR", "BGD", "KWT", "COL",
   "CZE", "BEL", "CHL", "ROU", "OMN", "PER", "QAT", "GRC", "ISR", "AUT",
-  // Additional countries for coverage
   "NOR", "SWE", "FIN", "DNK", "CHE", "PRT", "IRL", "NZL", "SGP", "HKG",
   "HUN", "SVK", "BGR", "HRV", "SRB", "LTU", "SVN", "LVA", "EST", "LUX",
   "TKM", "UZB", "AZE", "BLR", "AGO", "LBY", "SDN", "ETH", "KEN", "TZA",
@@ -19,6 +22,9 @@ const ALL_COUNTRIES = [
   "ECU", "BOL", "PRY", "URY", "PAN", "CRI", "GTM", "HND", "SLV", "NIC",
   "DOM", "CUB", "HTI", "JAM", "TTO", "BHS", "BRB", "GUY", "SUR", "BLZ",
 ];
+
+// Use priority countries for faster initial import, or full list for complete data
+const COUNTRIES_TO_IMPORT = process.env.FULL_IMPORT ? ALL_COUNTRIES : PRIORITY_COUNTRIES;
 
 interface ClimateTraceAsset {
   Id: number;
@@ -85,7 +91,7 @@ function extractEmissions(asset: ClimateTraceAsset): number | null {
 
 async function importAllData() {
   console.log("Starting Climate TRACE data import...");
-  console.log(`Importing from ${ALL_COUNTRIES.length} countries\n`);
+  console.log(`Importing from ${COUNTRIES_TO_IMPORT.length} countries\n`);
   
   let totalImported = 0;
   const startTime = Date.now();
@@ -96,8 +102,8 @@ async function importAllData() {
   
   // Process countries in batches of 5 for parallel fetching
   const batchSize = 5;
-  for (let i = 0; i < ALL_COUNTRIES.length; i += batchSize) {
-    const batch = ALL_COUNTRIES.slice(i, i + batchSize);
+  for (let i = 0; i < COUNTRIES_TO_IMPORT.length; i += batchSize) {
+    const batch = COUNTRIES_TO_IMPORT.slice(i, i + batchSize);
     
     const batchResults = await Promise.all(
       batch.map(async (country) => {
@@ -133,7 +139,7 @@ async function importAllData() {
       }
     }
     
-    console.log(`Progress: ${Math.min(i + batchSize, ALL_COUNTRIES.length)}/${ALL_COUNTRIES.length} countries, ${totalImported} sources\n`);
+    console.log(`Progress: ${Math.min(i + batchSize, COUNTRIES_TO_IMPORT.length)}/${COUNTRIES_TO_IMPORT.length} countries, ${totalImported} sources\n`);
   }
   
   const elapsed = ((Date.now() - startTime) / 1000 / 60).toFixed(1);

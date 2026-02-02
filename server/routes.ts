@@ -6,7 +6,7 @@ import { z } from "zod";
 import OpenAI from "openai";
 import { queryNearbyEpaFacilities } from "./epaQuery";
 import { queryAirQuality, aqiToScore, getAqiCategory } from "./waqiQuery";
-import { queryClimateTraceSources, queryClimateTraceSourcesForMap, formatEmissions, getSectorLabel, ClimateTraceSource } from "./climateTraceQuery";
+import { queryClimateTraceSources, queryClimateTraceSourcesForMap, formatEmissions, getSectorLabel, ClimateTraceSource, queryEmissionsFromDatabase, queryEmissionsNearLocation, getEmissionsDatabaseCount } from "./climateTraceQuery";
 import { queryLandCover } from "./landCoverQuery";
 
 // Reverse geocode coordinates to get accurate location name
@@ -114,16 +114,21 @@ export async function registerRoutes(
 
       // Get accurate location name via reverse geocoding (in parallel with EPA, WAQI, Climate TRACE, and Land Cover queries)
       const dataFetchStart = Date.now();
+      
+      // Check if database has emissions data for fast local queries
+      const dbCount = await getEmissionsDatabaseCount();
+      const useDatabase = dbCount > 1000; // Use database if we have sufficient data
+      
       const [locationName, epaData, aqiData, climateData, landCoverData] = await Promise.all([
         reverseGeocode(lat, lng),
         queryNearbyEpaFacilities(lat, lng, 10),
         queryAirQuality(lat, lng),
-        queryClimateTraceSources(lat, lng, 50),
+        useDatabase ? queryEmissionsNearLocation(lat, lng, 50) : queryClimateTraceSources(lat, lng, 50),
         queryLandCover(lat, lng, 1000) // 1km radius for land cover analysis
       ]);
       const dataFetchTime = Date.now() - dataFetchStart;
       
-      console.log(`[TIMING] Data fetch: ${dataFetchTime}ms | Location: ${locationName}, EPA: ${epaData.totalFacilities} facilities, AQI: ${aqiData.aqi}, Climate TRACE: ${climateData.sources.length} sources, Land Cover: ${landCoverData.dominantClass}`);
+      console.log(`[TIMING] Data fetch: ${dataFetchTime}ms | Location: ${locationName}, EPA: ${epaData.totalFacilities} facilities, AQI: ${aqiData.aqi}, Climate TRACE: ${climateData.sources.length} sources (DB: ${useDatabase}), Land Cover: ${landCoverData.dominantClass}`);
       
       // Build context about nearby facilities and air quality
       let facilityContext = "";
@@ -463,18 +468,22 @@ Return ONLY valid JSON.
     }
   });
 
-  // Climate TRACE emissions sources for map display
+  // Climate TRACE emissions sources for map display - from database
   app.get("/api/emissions-sources", async (req, res) => {
     try {
-      const lat = parseFloat(req.query.lat as string);
-      const lng = parseFloat(req.query.lng as string);
-      const radius = parseFloat(req.query.radius as string) || 100;
+      // Check if database has data, fallback to API if empty
+      const dbCount = await getEmissionsDatabaseCount();
       
-      if (isNaN(lat) || isNaN(lng)) {
-        return res.status(400).json({ message: "Valid lat and lng are required" });
+      let sources: ClimateTraceSource[];
+      if (dbCount > 0) {
+        console.log(`Emissions sources: Using database (${dbCount} sources)`);
+        sources = await queryEmissionsFromDatabase();
+      } else {
+        console.log("Emissions sources: Database empty, falling back to API");
+        const lat = parseFloat(req.query.lat as string) || 0;
+        const lng = parseFloat(req.query.lng as string) || 0;
+        sources = await queryClimateTraceSourcesForMap(lat, lng, 100);
       }
-      
-      const sources = await queryClimateTraceSourcesForMap(lat, lng, radius);
       
       res.json({
         sources: sources.map(s => ({
@@ -488,6 +497,7 @@ Return ONLY valid JSON.
           emissionsFormatted: s.emissionsFormatted,
         })),
         count: sources.length,
+        fromDatabase: dbCount > 0,
       });
     } catch (err) {
       console.error("Emissions sources error:", err);

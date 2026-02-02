@@ -1,3 +1,7 @@
+import { db } from "./db";
+import { emissionsSources } from "@shared/schema";
+import { sql, and, gte, lte } from "drizzle-orm";
+
 export interface ClimateTraceSource {
   id: string | number;
   name: string;
@@ -412,4 +416,102 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
+}
+
+// Database-backed queries for pre-cached Climate TRACE data
+
+export async function queryEmissionsFromDatabase(): Promise<ClimateTraceSource[]> {
+  try {
+    // Get all sources ordered by emissions (top emitters first)
+    const results = await db
+      .select()
+      .from(emissionsSources)
+      .orderBy(sql`emissions DESC NULLS LAST`)
+      .limit(50000);
+    
+    return results.map(r => ({
+      id: r.sourceId,
+      name: r.name,
+      sector: r.sector,
+      subsector: "",
+      lat: r.lat,
+      lng: r.lng,
+      emissions: r.emissions,
+      emissionsFormatted: r.emissions ? formatEmissions(r.emissions) : undefined,
+      emissionsUnit: "tonnes CO2e/yr",
+      country: r.country,
+    }));
+  } catch (error) {
+    console.error("Database emissions query failed:", error);
+    return [];
+  }
+}
+
+export async function queryEmissionsNearLocation(
+  lat: number, 
+  lng: number, 
+  radiusKm: number = 100
+): Promise<ClimateTraceResult> {
+  try {
+    // Approximate bounding box for radius (1 degree ~ 111km at equator)
+    const latDelta = radiusKm / 111;
+    const lngDelta = radiusKm / (111 * Math.cos(lat * Math.PI / 180));
+    
+    const results = await db
+      .select()
+      .from(emissionsSources)
+      .where(
+        and(
+          gte(emissionsSources.lat, lat - latDelta),
+          lte(emissionsSources.lat, lat + latDelta),
+          gte(emissionsSources.lng, lng - lngDelta),
+          lte(emissionsSources.lng, lng + lngDelta)
+        )
+      )
+      .orderBy(sql`emissions DESC NULLS LAST`)
+      .limit(100);
+    
+    const sources: ClimateTraceSource[] = results
+      .filter(r => haversineDistance(lat, lng, r.lat, r.lng) <= radiusKm)
+      .map(r => ({
+        id: r.sourceId,
+        name: r.name,
+        sector: r.sector,
+        subsector: "",
+        lat: r.lat,
+        lng: r.lng,
+        emissions: r.emissions,
+        emissionsFormatted: r.emissions ? formatEmissions(r.emissions) : undefined,
+        emissionsUnit: "tonnes CO2e/yr",
+        country: r.country,
+      }));
+    
+    const sectorBreakdown: Record<string, { count: number; emissions: number }> = {};
+    let totalEmissions = 0;
+    
+    for (const source of sources) {
+      if (!sectorBreakdown[source.sector]) {
+        sectorBreakdown[source.sector] = { count: 0, emissions: 0 };
+      }
+      sectorBreakdown[source.sector].count++;
+      if (source.emissions) {
+        sectorBreakdown[source.sector].emissions += source.emissions;
+        totalEmissions += source.emissions;
+      }
+    }
+    
+    return { sources, totalEmissions, sectorBreakdown };
+  } catch (error) {
+    console.error("Database emissions near location query failed:", error);
+    return emptyResult();
+  }
+}
+
+export async function getEmissionsDatabaseCount(): Promise<number> {
+  try {
+    const result = await db.select({ count: sql<number>`count(*)` }).from(emissionsSources);
+    return Number(result[0].count);
+  } catch {
+    return 0;
+  }
 }
