@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { Button } from "@/components/ui/button";
@@ -71,10 +71,20 @@ function MapController({ center }: { center: [number, number] | null }) {
   return null;
 }
 
-function LocationMarker({ onSelectLocation }: { onSelectLocation: (lat: number, lng: number) => void }) {
+function LocationMarker({ onSelectLocation, onCenterChange }: { 
+  onSelectLocation: (lat: number, lng: number) => void;
+  onCenterChange?: (lat: number, lng: number) => void;
+}) {
   useMapEvents({
     click(e: L.LeafletMouseEvent) {
       onSelectLocation(e.latlng.lat, e.latlng.lng);
+    },
+    moveend(e) {
+      if (onCenterChange) {
+        const map = e.target;
+        const center = map.getCenter();
+        onCenterChange(center.lat, center.lng);
+      }
     },
   });
   return null;
@@ -121,6 +131,26 @@ export default function Home() {
   const { data: pins } = usePins();
   const analyze = useAnalyzeLocation();
   const { stats, levelInfo, newBadges, recordPinDrop, recordExploration, clearNewBadges } = useGamification();
+  
+  // Debounced center change handler for map panning
+  const centerDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleMapCenterChange = useCallback((lat: number, lng: number) => {
+    if (centerDebounceRef.current) {
+      clearTimeout(centerDebounceRef.current);
+    }
+    centerDebounceRef.current = setTimeout(() => {
+      setCenter([lat, lng]);
+    }, 500); // Debounce by 500ms
+  }, []);
+  
+  // Cleanup debounce timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (centerDebounceRef.current) {
+        clearTimeout(centerDebounceRef.current);
+      }
+    };
+  }, []);
 
   // Initialize with user location (with fast timeout fallback)
   useEffect(() => {
@@ -376,7 +406,10 @@ export default function Home() {
             )}
             
             <MapController center={center} />
-            <LocationMarker onSelectLocation={(lat, lng) => handleLocationSelect(lat, lng)} />
+            <LocationMarker 
+              onSelectLocation={(lat, lng) => handleLocationSelect(lat, lng)}
+              onCenterChange={handleMapCenterChange}
+            />
 
             {/* Visual Layers */}
             {layers.air && center && (
