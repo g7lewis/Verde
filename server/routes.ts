@@ -398,79 +398,104 @@ Return ONLY valid JSON.
     }
   });
 
-  // EPA facilities for map display - entire US dataset with pagination
+  // EPA facilities for map display - cached in memory to avoid repeated heavy fetches
+  let epaFacilitiesCache: { facilities: any[]; count: number; fetchedAt: number } | null = null;
+  let epaFacilitiesFetchPromise: Promise<{ facilities: any[]; count: number }> | null = null;
+  const EPA_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+  async function fetchEpaFacilities(): Promise<{ facilities: any[]; count: number }> {
+    const baseUrl = "https://echogeo.epa.gov/arcgis/rest/services/ECHO/Facilities/MapServer/0/query";
+    const allFeatures: any[] = [];
+    let offset = 0;
+    const limit = 1000;
+    const maxPages = 15;
+
+    console.log("EPA facilities: Fetching entire US dataset with pagination");
+
+    for (let page = 0; page < maxPages; page++) {
+      const params = new URLSearchParams({
+        geometry: "-125,24,-66,50",
+        geometryType: "esriGeometryEnvelope",
+        inSR: "4326",
+        outSR: "4326",
+        spatialRel: "esriSpatialRelIntersects",
+        outFields: "FAC_NAME,FAC_MAJOR_FLAG,FAC_CURR_SNC_FLG",
+        returnGeometry: "true",
+        f: "json",
+        where: "FAC_MAJOR_FLAG='Y' OR FAC_CURR_SNC_FLG='Y'",
+        resultRecordCount: limit.toString(),
+        resultOffset: offset.toString(),
+      });
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+      try {
+        const response = await fetch(`${baseUrl}?${params.toString()}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) break;
+
+        const data = await response.json();
+        const features = data.features || [];
+
+        if (features.length === 0) break;
+
+        allFeatures.push(...features);
+        console.log(`EPA facilities: Page ${page + 1}, fetched ${features.length}, total ${allFeatures.length}`);
+
+        if (features.length < limit) break;
+        offset += limit;
+      } catch {
+        clearTimeout(timeoutId);
+        break;
+      }
+    }
+
+    const facilities = allFeatures
+      .map((f: any) => ({
+        id: f.attributes.FAC_NAME || Math.random().toString(36).slice(2),
+        name: f.attributes.FAC_NAME || "Unknown Facility",
+        isMajor: f.attributes.FAC_MAJOR_FLAG === "Y",
+        hasViolation: f.attributes.FAC_CURR_SNC_FLG === "Y",
+        lat: f.geometry?.y,
+        lng: f.geometry?.x,
+      }))
+      .filter((f: any) => f.lat && f.lng);
+
+    console.log(`EPA facilities: Found ${facilities.length} total facilities`);
+    return { facilities, count: facilities.length };
+  }
+
   app.get("/api/epa-facilities", async (req, res) => {
     try {
-      const baseUrl = "https://echogeo.epa.gov/arcgis/rest/services/ECHO/Facilities/MapServer/0/query";
-      const allFeatures: any[] = [];
-      let offset = 0;
-      const limit = 1000; // EPA API max per request
-      const maxPages = 15; // Cap at 15,000 facilities for performance
-      
-      console.log("EPA facilities: Fetching entire US dataset with pagination");
-      
-      // Paginate through results
-      for (let page = 0; page < maxPages; page++) {
-        const params = new URLSearchParams({
-          geometry: "-125,24,-66,50", // Continental US bounding box
-          geometryType: "esriGeometryEnvelope",
-          inSR: "4326",
-          outSR: "4326",
-          spatialRel: "esriSpatialRelIntersects",
-          outFields: "FAC_NAME,FAC_MAJOR_FLAG,FAC_CURR_SNC_FLG",
-          returnGeometry: "true",
-          f: "json",
-          where: "FAC_MAJOR_FLAG='Y' OR FAC_CURR_SNC_FLG='Y'",
-          resultRecordCount: limit.toString(),
-          resultOffset: offset.toString(),
-        });
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-        
-        try {
-          const response = await fetch(`${baseUrl}?${params.toString()}`, { signal: controller.signal });
-          clearTimeout(timeoutId);
-          
-          if (!response.ok) break;
-          
-          const data = await response.json();
-          const features = data.features || [];
-          
-          if (features.length === 0) break;
-          
-          allFeatures.push(...features);
-          console.log(`EPA facilities: Page ${page + 1}, fetched ${features.length}, total ${allFeatures.length}`);
-          
-          if (features.length < limit) break; // No more results
-          offset += limit;
-        } catch {
-          break;
-        }
+      const now = Date.now();
+
+      // Serve from cache if fresh
+      if (epaFacilitiesCache && now - epaFacilitiesCache.fetchedAt < EPA_CACHE_TTL_MS) {
+        console.log(`EPA facilities: Serving from cache (${epaFacilitiesCache.count} facilities)`);
+        return res.json({ facilities: epaFacilitiesCache.facilities, count: epaFacilitiesCache.count });
       }
-      
-      const facilities = allFeatures
-        .map((f: any) => ({
-          id: f.attributes.FAC_NAME || Math.random().toString(36).slice(2),
-          name: f.attributes.FAC_NAME || "Unknown Facility",
-          isMajor: f.attributes.FAC_MAJOR_FLAG === "Y",
-          hasViolation: f.attributes.FAC_CURR_SNC_FLG === "Y",
-          lat: f.geometry?.y,
-          lng: f.geometry?.x,
-        }))
-        .filter((f: any) => f.lat && f.lng);
-      
-      console.log(`EPA facilities: Found ${facilities.length} total facilities`);
-      
-      res.json({
-        facilities,
-        count: facilities.length,
-      });
+
+      // Deduplicate concurrent requests — share a single in-flight fetch
+      if (!epaFacilitiesFetchPromise) {
+        epaFacilitiesFetchPromise = fetchEpaFacilities()
+          .then((result) => {
+            epaFacilitiesCache = { ...result, fetchedAt: Date.now() };
+            epaFacilitiesFetchPromise = null;
+            return result;
+          })
+          .catch((err) => {
+            epaFacilitiesFetchPromise = null;
+            throw err;
+          });
+      } else {
+        console.log("EPA facilities: Waiting for in-flight fetch to complete");
+      }
+
+      const result = await epaFacilitiesFetchPromise;
+      res.json(result);
     } catch (err: any) {
-      if (err.name === 'AbortError') {
-        console.log("EPA facilities request timed out");
-        return res.json({ facilities: [], count: 0 });
-      }
       console.error("EPA facilities error:", err);
       res.status(500).json({ message: "Failed to fetch EPA facilities" });
     }
