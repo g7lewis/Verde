@@ -43,7 +43,8 @@ Score sources are tracked per-category (`scoreSources` field): "calenviroscreen"
 ### UI & Sharing
 - **Letter grades** (A+ to F) are the primary score display, with numeric values shown smaller as secondary context.
 - The overall score badge uses a gradient color (green→yellow→red) based on the average score.
-- **Share button** is a full-width primary CTA below the score rows, labeled "Share [grade] Score".
+- **Share buttons** are at the top of the card body, right below the header: "Share Link" (copies emoji-rich text + URL) and "Share Card" (generates a visual image).
+- **Share Card** generates a 1200x630 canvas-based social media card with dark green gradient, large letter grade badge, location name, and color-coded score bars for all 5 categories. Can be saved as PNG or shared via native share (with image file on supported devices).
 - **Share text** includes emoji, letter grades for all 5 categories, best/worst highlights, and a "How does your area compare?" CTA.
 - **URL-based location sharing**: lat/lng query params are encoded in the URL (e.g., `?lat=34.0522&lng=-118.2437`). Opening a shared link auto-triggers analysis.
 - **OG meta tags** in `client/index.html` for social media previews (og:title, og:description, og:site_name, og:url, twitter:card).

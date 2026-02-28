@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wind, Droplets, Thermometer, Trees, CheckCircle2, MessageCircle, Send, Loader2, Factory, AlertTriangle, ChevronDown, Lightbulb, Info, X, Minimize2, Maximize2, Share2, Check, Map, Shield, Database, ExternalLink, Leaf } from "lucide-react";
+import { Wind, Droplets, Thermometer, Trees, CheckCircle2, MessageCircle, Send, Loader2, Factory, AlertTriangle, ChevronDown, Lightbulb, Info, X, Minimize2, Maximize2, Share2, Check, Map, Shield, Database, ExternalLink, Leaf, Download, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -345,11 +345,187 @@ interface EnvironmentalCardFullProps extends EnvironmentalCardProps {
   onToggleMinimize?: () => void;
 }
 
+function generateShareCard(
+  location: string,
+  scores: Record<string, number>,
+  average: number,
+  overallGrade: { letter: string; modifier: string },
+  vibeLabel: string,
+): HTMLCanvasElement {
+  const W = 1200;
+  const H = 630;
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d")!;
+
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, "#064e3b");
+  grad.addColorStop(0.5, "#065f46");
+  grad.addColorStop(1, "#047857");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = "rgba(255,255,255,0.03)";
+  for (let i = 0; i < 6; i++) {
+    ctx.beginPath();
+    ctx.arc(200 + i * 180, 100 + (i % 2) * 400, 120 + i * 20, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const gradeSize = 120;
+  const gx = 100;
+  const gy = 120;
+  const gw = 160;
+  const gh = 160;
+  const gradeColorMap: Record<string, [string, string]> = {
+    A: ["#10b981", "#059669"],
+    B: ["#84cc16", "#65a30d"],
+    C: ["#eab308", "#ca8a04"],
+    D: ["#f97316", "#ea580c"],
+    F: ["#ef4444", "#dc2626"],
+  };
+  const [gc1, gc2] = gradeColorMap[overallGrade.letter] || gradeColorMap.C;
+  const gradeGrad = ctx.createLinearGradient(gx, gy, gx + gw, gy + gh);
+  gradeGrad.addColorStop(0, gc1);
+  gradeGrad.addColorStop(1, gc2);
+
+  ctx.beginPath();
+  const r = 24;
+  ctx.moveTo(gx + r, gy);
+  ctx.lineTo(gx + gw - r, gy);
+  ctx.quadraticCurveTo(gx + gw, gy, gx + gw, gy + r);
+  ctx.lineTo(gx + gw, gy + gh - r);
+  ctx.quadraticCurveTo(gx + gw, gy + gh, gx + gw - r, gy + gh);
+  ctx.lineTo(gx + r, gy + gh);
+  ctx.quadraticCurveTo(gx, gy + gh, gx, gy + gh - r);
+  ctx.lineTo(gx, gy + r);
+  ctx.quadraticCurveTo(gx, gy, gx + r, gy);
+  ctx.closePath();
+  ctx.fillStyle = gradeGrad;
+  ctx.fill();
+
+  ctx.shadowColor = "rgba(0,0,0,0.3)";
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 4;
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold ${gradeSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(`${overallGrade.letter}${overallGrade.modifier}`, gx + gw / 2, gy + gh / 2 - 8);
+
+  ctx.shadowColor = "transparent";
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+
+  ctx.font = `600 14px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+  ctx.fillStyle = "rgba(255,255,255,0.8)";
+  ctx.fillText(`${average}/100`, gx + gw / 2, gy + gh / 2 + 55);
+
+  const textX = gx + gw + 40;
+
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 42px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+
+  const maxLocW = W - textX - 60;
+  let locText = location;
+  let locMeasure = ctx.measureText(locText);
+  if (locMeasure.width > maxLocW) {
+    while (ctx.measureText(locText + "...").width > maxLocW && locText.length > 10) {
+      locText = locText.slice(0, -1);
+    }
+    locText += "...";
+  }
+  ctx.fillText(locText, textX, gy + 50);
+
+  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  ctx.font = `500 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+  ctx.fillText(`${vibeLabel} Environmental Score`, textX, gy + 90);
+
+  const categories = [
+    { key: "airQuality", label: "Air Quality", icon: "💨" },
+    { key: "waterQuality", label: "Water Quality", icon: "💧" },
+    { key: "climateEmissions", label: "Climate & Emissions", icon: "🌡️" },
+    { key: "greenSpace", label: "Green Space", icon: "🌳" },
+    { key: "pollution", label: "Cleanliness", icon: "✨" },
+  ];
+
+  const barStartY = 320;
+  const barH = 44;
+  const barGap = 10;
+  const barMaxW = W - 200;
+  const barX = 100;
+
+  categories.forEach((cat, i) => {
+    const y = barStartY + i * (barH + barGap);
+    const val = scores[cat.key] || 0;
+    const g = getLetterGrade(val);
+
+    ctx.fillStyle = "rgba(255,255,255,0.08)";
+    ctx.beginPath();
+    const br = barH / 2;
+    ctx.moveTo(barX + br, y);
+    ctx.lineTo(barX + barMaxW - br, y);
+    ctx.quadraticCurveTo(barX + barMaxW, y, barX + barMaxW, y + br);
+    ctx.quadraticCurveTo(barX + barMaxW, y + barH, barX + barMaxW - br, y + barH);
+    ctx.lineTo(barX + br, y + barH);
+    ctx.quadraticCurveTo(barX, y + barH, barX, y + br);
+    ctx.quadraticCurveTo(barX, y, barX + br, y);
+    ctx.closePath();
+    ctx.fill();
+
+    const fillW = Math.max((val / 100) * barMaxW, barH);
+    const barColorMap: Record<string, string> = {
+      A: "#10b981", B: "#84cc16", C: "#eab308", D: "#f97316", F: "#ef4444",
+    };
+    ctx.fillStyle = barColorMap[g.letter] || barColorMap.C;
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    const fw = Math.min(fillW, barMaxW);
+    ctx.moveTo(barX + br, y);
+    ctx.lineTo(barX + fw - br, y);
+    ctx.quadraticCurveTo(barX + fw, y, barX + fw, y + br);
+    ctx.quadraticCurveTo(barX + fw, y + barH, barX + fw - br, y + barH);
+    ctx.lineTo(barX + br, y + barH);
+    ctx.quadraticCurveTo(barX, y + barH, barX, y + br);
+    ctx.quadraticCurveTo(barX, y, barX + br, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `bold 18px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`${cat.label}`, barX + 16, y + barH / 2);
+
+    ctx.textAlign = "right";
+    ctx.font = `bold 20px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+    ctx.fillText(`${g.letter}${g.modifier}`, barX + barMaxW - 16, y + barH / 2);
+  });
+
+  ctx.textAlign = "left";
+  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.font = `600 18px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+  ctx.fillText("verde", 100, H - 40);
+
+  ctx.fillStyle = "rgba(255,255,255,0.35)";
+  ctx.font = `400 16px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+  ctx.textAlign = "right";
+  ctx.fillText("How does your area compare?  verde.replit.app", W - 60, H - 40);
+
+  return canvas;
+}
+
 export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimized, onToggleMinimize }: EnvironmentalCardFullProps) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [isAsking, setIsAsking] = useState(false);
   const [shareStatus, setShareStatus] = useState<"idle" | "copied">("idle");
+  const [showShareCard, setShowShareCard] = useState(false);
+  const shareCardRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     if (lat !== undefined && lng !== undefined && data?.location) {
@@ -361,7 +537,7 @@ export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimi
     }
   }, [lat, lng, data?.location]);
 
-  const handleShare = async () => {
+  const getShareText = useCallback(() => {
     const scores = data.scores;
     const average = Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / Object.values(scores).length);
     const overallGrade = getLetterGrade(average);
@@ -375,19 +551,21 @@ export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimi
       return `${getCategoryEmoji(key)} ${getCategoryLabel(key)}: ${g.letter}${g.modifier}`;
     });
 
-    const shareText = `${emoji} ${data.location} scored ${overallGrade.letter}${overallGrade.modifier} on Verde!
+    return `${emoji} ${data.location} scored ${overallGrade.letter}${overallGrade.modifier} on Verde!\n\n${scoreLines.join("\n")}\n\nBest: ${getCategoryEmoji(bestCategory[0])} ${getCategoryLabel(bestCategory[0])} (${getLetterGrade(bestCategory[1]).letter}${getLetterGrade(bestCategory[1]).modifier})\nNeeds work: ${getCategoryEmoji(worstCategory[0])} ${getCategoryLabel(worstCategory[0])} (${getLetterGrade(worstCategory[1]).letter}${getLetterGrade(worstCategory[1]).modifier})\n\nHow does your area compare?`;
+  }, [data]);
 
-${scoreLines.join("\n")}
-
-Best: ${getCategoryEmoji(bestCategory[0])} ${getCategoryLabel(bestCategory[0])} (${getLetterGrade(bestCategory[1]).letter}${getLetterGrade(bestCategory[1]).modifier})
-Needs work: ${getCategoryEmoji(worstCategory[0])} ${getCategoryLabel(worstCategory[0])} (${getLetterGrade(worstCategory[1]).letter}${getLetterGrade(worstCategory[1]).modifier})
-
-How does your area compare?`;
-
-    const shareUrl = lat !== undefined && lng !== undefined 
+  const getShareUrl = useCallback(() => {
+    return lat !== undefined && lng !== undefined
       ? `${window.location.origin}?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`
       : window.location.href;
-    
+  }, [lat, lng]);
+
+  const handleShareLink = async () => {
+    const shareText = getShareText();
+    const shareUrl = getShareUrl();
+    const average = Math.round(Object.values(data.scores).reduce((a, b) => a + b, 0) / Object.values(data.scores).length);
+    const overallGrade = getLetterGrade(average);
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -409,6 +587,51 @@ How does your area compare?`;
       console.error("Failed to copy:", err);
     }
   };
+
+  const handleShareImage = useCallback(() => {
+    const scores = data.scores;
+    const average = Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / Object.values(scores).length);
+    const overallGrade = getLetterGrade(average);
+    let vibeLabel = "Good";
+    if (average >= 80) vibeLabel = "Excellent";
+    else if (average < 30) vibeLabel = "Critical";
+    else if (average < 50) vibeLabel = "Poor";
+    else if (average < 70) vibeLabel = "Moderate";
+
+    const canvas = generateShareCard(data.location, scores as unknown as Record<string, number>, average, overallGrade, vibeLabel);
+    shareCardRef.current = canvas;
+    setShowShareCard(true);
+  }, [data]);
+
+  const handleDownloadCard = useCallback(() => {
+    if (!shareCardRef.current) return;
+    const link = document.createElement("a");
+    link.download = `verde-${data.location.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase()}.png`;
+    link.href = shareCardRef.current.toDataURL("image/png");
+    link.click();
+  }, [data]);
+
+  const handleNativeShareCard = useCallback(async () => {
+    if (!shareCardRef.current) return;
+    const canvas = shareCardRef.current;
+    try {
+      const blob = await new Promise<Blob>((resolve) =>
+        canvas.toBlob((b) => resolve(b!), "image/png")
+      );
+      const file = new File([blob], `verde-${data.location.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase()}.png`, { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          text: getShareText(),
+          url: getShareUrl(),
+          files: [file],
+        });
+      } else {
+        handleDownloadCard();
+      }
+    } catch (err) {
+      handleDownloadCard();
+    }
+  }, [data, getShareText, getShareUrl, handleDownloadCard]);
 
   const handleAskQuestion = async () => {
     if (!question.trim() || !lat || !lng) return;
@@ -538,6 +761,93 @@ How does your area compare?`;
       </div>
       
       <div className="p-4 md:p-5 overflow-y-auto custom-scrollbar">
+        <div className="flex gap-2 mb-4">
+          <Button
+            onClick={handleShareLink}
+            variant="default"
+            size="sm"
+            className={`flex-1 rounded-xl font-semibold text-sm ${
+              shareStatus === "copied"
+                ? "bg-green-500 text-white"
+                : "bg-primary text-white"
+            }`}
+            data-testid="button-share"
+          >
+            {shareStatus === "copied" ? (
+              <>
+                <Check className="w-4 h-4 mr-1.5" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Share2 className="w-4 h-4 mr-1.5" />
+                Share Link
+              </>
+            )}
+          </Button>
+          <Button
+            onClick={handleShareImage}
+            variant="secondary"
+            size="sm"
+            className="flex-1 rounded-xl font-semibold text-sm border border-primary/20"
+            data-testid="button-share-card"
+          >
+            <Image className="w-4 h-4 mr-1.5" />
+            Share Card
+          </Button>
+        </div>
+
+        <AnimatePresence>
+          {showShareCard && shareCardRef.current && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-4 overflow-hidden"
+            >
+              <div className="rounded-xl overflow-hidden border border-secondary/50 shadow-md">
+                <img
+                  src={shareCardRef.current.toDataURL("image/png")}
+                  alt="Verde share card"
+                  className="w-full h-auto"
+                  data-testid="img-share-card"
+                />
+              </div>
+              <div className="flex gap-2 mt-2">
+                <Button
+                  onClick={handleDownloadCard}
+                  variant="default"
+                  size="sm"
+                  className="flex-1 rounded-xl text-sm bg-primary text-white"
+                  data-testid="button-download-card"
+                >
+                  <Download className="w-4 h-4 mr-1.5" />
+                  Download
+                </Button>
+                <Button
+                  onClick={handleNativeShareCard}
+                  variant="secondary"
+                  size="sm"
+                  className="flex-1 rounded-xl text-sm border border-primary/20"
+                  data-testid="button-native-share-card"
+                >
+                  <Share2 className="w-4 h-4 mr-1.5" />
+                  Share
+                </Button>
+                <Button
+                  onClick={() => setShowShareCard(false)}
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-xl text-sm"
+                  data-testid="button-close-share-card"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <p className="text-sm text-muted-foreground leading-relaxed bg-secondary/20 p-3 rounded-lg border border-secondary/50 mb-4" data-testid="text-summary">
           {data.summary}
         </p>
@@ -689,32 +999,6 @@ How does your area compare?`;
             testId="score-cleanliness"
             dataSource={data.scoreSources?.pollution}
           />
-        </div>
-
-        <div className="mt-4">
-          <Button
-            onClick={handleShare}
-            variant={shareStatus === "copied" ? "default" : "default"}
-            size="lg"
-            className={`w-full rounded-xl font-semibold text-sm ${
-              shareStatus === "copied" 
-                ? "bg-green-500 text-white" 
-                : "bg-primary text-white shadow-md"
-            }`}
-            data-testid="button-share"
-          >
-            {shareStatus === "copied" ? (
-              <>
-                <Check className="w-4 h-4 mr-2" />
-                Copied to clipboard!
-              </>
-            ) : (
-              <>
-                <Share2 className="w-4 h-4 mr-2" />
-                Share {overallGrade.letter}{overallGrade.modifier} Score
-              </>
-            )}
-          </Button>
         </div>
 
         {data.epaContext && data.epaContext.totalFacilities > 0 && (
