@@ -852,62 +852,6 @@ export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimi
           {data.summary}
         </p>
           
-        {data.aqiContext ? (
-          <div className="mb-4 p-3 rounded-lg bg-sky-50 border border-sky-200" data-testid="section-aqi-context">
-            <div className="flex items-center gap-2 mb-2">
-              <Wind className="w-4 h-4 text-sky-600" />
-              <span className="text-sm font-medium text-sky-800">Real-time Air Quality</span>
-            </div>
-            <div className="flex items-center gap-3 mb-2">
-              <div 
-                className={`text-center p-2 px-4 rounded border ${
-                  data.aqiContext.aqi <= 50 ? 'bg-green-100 border-green-200' :
-                  data.aqiContext.aqi <= 100 ? 'bg-yellow-100 border-yellow-200' :
-                  data.aqiContext.aqi <= 150 ? 'bg-orange-100 border-orange-200' :
-                  'bg-red-100 border-red-200'
-                }`}
-                data-testid="badge-aqi-value"
-              >
-                <div className={`text-2xl font-bold ${
-                  data.aqiContext.aqi <= 50 ? 'text-green-700' :
-                  data.aqiContext.aqi <= 100 ? 'text-yellow-700' :
-                  data.aqiContext.aqi <= 150 ? 'text-orange-700' :
-                  'text-red-700'
-                }`}>{data.aqiContext.aqi}</div>
-                <div className="text-xs text-muted-foreground">AQI</div>
-              </div>
-              <div className="flex-1">
-                <div 
-                  className={`text-sm font-medium ${
-                    data.aqiContext.aqi <= 50 ? 'text-green-700' :
-                    data.aqiContext.aqi <= 100 ? 'text-yellow-700' :
-                    data.aqiContext.aqi <= 150 ? 'text-orange-700' :
-                    'text-red-700'
-                  }`}
-                  data-testid="text-aqi-category"
-                >{data.aqiContext.category}</div>
-                {data.aqiContext.dominantPollutant && (
-                  <div className="text-xs text-muted-foreground" data-testid="text-aqi-pollutant">
-                    Main pollutant: {data.aqiContext.dominantPollutant.toUpperCase()}
-                  </div>
-                )}
-                {data.aqiContext.station && (
-                  <div className="text-xs text-muted-foreground truncate" title={data.aqiContext.station} data-testid="text-aqi-station">
-                    Station: {data.aqiContext.station}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="mb-4 p-3 rounded-lg bg-muted/30 border border-muted" data-testid="section-aqi-unavailable">
-            <div className="flex items-center gap-2">
-              <Wind className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Real-time air quality data unavailable for this location</span>
-            </div>
-          </div>
-        )}
-        
         <div className="mb-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
           <div className="flex items-center gap-2 mb-2">
             <MessageCircle className="w-4 h-4 text-primary" />
