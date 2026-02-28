@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wind, Droplets, Footprints, Trees, CheckCircle2, MessageCircle, Send, Loader2, Factory, AlertTriangle, ChevronDown, Lightbulb, Info, X, Minimize2, Maximize2, Share2, Check, Copy, Map } from "lucide-react";
+import { Wind, Droplets, Footprints, Trees, CheckCircle2, MessageCircle, Send, Loader2, Factory, AlertTriangle, ChevronDown, Lightbulb, Info, X, Minimize2, Maximize2, Share2, Check, Copy, Map, Shield, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,25 @@ interface ClimateTraceData {
   }[];
 }
 
+function DataSourceBadge({ source }: { source?: string }) {
+  if (!source) return null;
+  
+  const config: Record<string, { label: string; className: string }> = {
+    calenviroscreen: { label: "CES 4.0", className: "bg-indigo-100 text-indigo-700 border-indigo-200" },
+    deterministic: { label: "Data-driven", className: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+    ai: { label: "AI estimated", className: "bg-slate-100 text-slate-600 border-slate-200" },
+  };
+  
+  const { label, className } = config[source] || config.ai!;
+  
+  return (
+    <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium border ${className}`} data-testid={`badge-source-${source}`}>
+      <Database className="w-2.5 h-2.5" />
+      {label}
+    </span>
+  );
+}
+
 interface ScoreProps {
   label: string;
   value: number;
@@ -38,9 +57,10 @@ interface ScoreProps {
   detail?: ScoreDetail;
   testId?: string;
   climateTraceData?: ClimateTraceData | null;
+  dataSource?: string;
 }
 
-function ScoreRow({ label, value, icon: Icon, colorClass, detail, testId, climateTraceData }: ScoreProps) {
+function ScoreRow({ label, value, icon: Icon, colorClass, detail, testId, climateTraceData, dataSource }: ScoreProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   
   let statusColor = "bg-red-500";
@@ -66,6 +86,7 @@ function ScoreRow({ label, value, icon: Icon, colorClass, detail, testId, climat
             <div className="flex justify-between items-center mb-1">
               <span className="font-semibold text-sm text-foreground/80">{label}</span>
               <div className="flex items-center gap-2">
+                <DataSourceBadge source={dataSource} />
                 <span className="font-bold text-foreground">{value}/100</span>
                 {isExpandable && (
                   <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
@@ -227,6 +248,19 @@ interface EnvironmentalCardProps {
       cropPercentage: number;
       vegetationPercentage: number;
     } | null;
+    cesContext?: {
+      censusTract: string;
+      overallPercentile: number | null;
+      pollutionBurden: { score: number | null; percentile: number | null };
+      cleanupSites: { value: number | null; percentile: number | null };
+      groundwaterThreats: { value: number | null; percentile: number | null };
+      drinkingWater: { value: number | null; percentile: number | null };
+      hazardousWaste: { value: number | null; percentile: number | null };
+      impairedWaterBodies: { value: number | null; percentile: number | null };
+      toxicReleases: { value: number | null; percentile: number | null };
+      pesticides: { value: number | null; percentile: number | null };
+    } | null;
+    scoreSources?: Record<string, string>;
   };
   lat?: number;
   lng?: number;
@@ -545,6 +579,7 @@ Explore environmental data at Verde`;
             colorClass="text-sky-500"
             detail={data.scoreDetails?.airQuality}
             testId="score-air-quality"
+            dataSource={data.scoreSources?.airQuality}
           />
           <ScoreRow 
             label="Water Quality" 
@@ -553,6 +588,7 @@ Explore environmental data at Verde`;
             colorClass="text-blue-500"
             detail={data.scoreDetails?.waterQuality}
             testId="score-water-quality"
+            dataSource={data.scoreSources?.waterQuality}
           />
           <ScoreRow 
             label="Walkability" 
@@ -561,6 +597,7 @@ Explore environmental data at Verde`;
             colorClass="text-orange-500"
             detail={data.scoreDetails?.walkability}
             testId="score-walkability"
+            dataSource={data.scoreSources?.walkability}
           />
           <ScoreRow 
             label="Green Space" 
@@ -569,6 +606,7 @@ Explore environmental data at Verde`;
             colorClass="text-green-600"
             detail={data.scoreDetails?.greenSpace}
             testId="score-green-space"
+            dataSource={data.scoreSources?.greenSpace}
           />
           <ScoreRow 
             label="Cleanliness" 
@@ -578,6 +616,7 @@ Explore environmental data at Verde`;
             detail={data.scoreDetails?.pollution}
             testId="score-cleanliness"
             climateTraceData={data.climateTraceContext}
+            dataSource={data.scoreSources?.pollution}
           />
         </div>
         
@@ -623,6 +662,62 @@ Explore environmental data at Verde`;
           </div>
         )}
         
+        {/* CalEnviroScreen 4.0 Context (California) */}
+        {data.cesContext && (
+          <div className="mt-4 p-3 rounded-lg bg-indigo-50 border border-indigo-200" data-testid="section-ces-context">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="w-4 h-4 text-indigo-600" />
+              <span className="text-sm font-medium text-indigo-800">CalEnviroScreen 4.0</span>
+              <span className="text-xs text-indigo-500">Tract {data.cesContext.censusTract}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              {data.cesContext.overallPercentile !== null && (
+                <div className="text-center p-2 bg-white rounded border border-indigo-100">
+                  <div className={`text-lg font-bold ${data.cesContext.overallPercentile > 75 ? 'text-red-600' : data.cesContext.overallPercentile > 50 ? 'text-yellow-600' : 'text-green-600'}`}>
+                    {data.cesContext.overallPercentile.toFixed(0)}%
+                  </div>
+                  <div className="text-xs text-muted-foreground">CES Percentile</div>
+                </div>
+              )}
+              {data.cesContext.pollutionBurden.percentile !== null && (
+                <div className="text-center p-2 bg-white rounded border border-indigo-100">
+                  <div className={`text-lg font-bold ${data.cesContext.pollutionBurden.percentile > 75 ? 'text-red-600' : data.cesContext.pollutionBurden.percentile > 50 ? 'text-yellow-600' : 'text-green-600'}`}>
+                    {data.cesContext.pollutionBurden.percentile.toFixed(0)}%
+                  </div>
+                  <div className="text-xs text-muted-foreground">Pollution Burden</div>
+                </div>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {data.cesContext.cleanupSites.value !== null && data.cesContext.cleanupSites.value > 0 && (
+                <Badge variant="secondary" className="text-xs bg-indigo-100 text-indigo-800 border-indigo-200" data-testid="badge-cleanup-sites">
+                  {data.cesContext.cleanupSites.value.toFixed(0)} cleanup sites
+                </Badge>
+              )}
+              {data.cesContext.groundwaterThreats.percentile !== null && data.cesContext.groundwaterThreats.percentile > 50 && (
+                <Badge variant="secondary" className="text-xs bg-indigo-100 text-indigo-800 border-indigo-200" data-testid="badge-groundwater">
+                  GW threats: {data.cesContext.groundwaterThreats.percentile.toFixed(0)}th pctl
+                </Badge>
+              )}
+              {data.cesContext.drinkingWater.percentile !== null && data.cesContext.drinkingWater.percentile > 50 && (
+                <Badge variant="secondary" className="text-xs bg-indigo-100 text-indigo-800 border-indigo-200" data-testid="badge-drinking-water">
+                  Drinking water: {data.cesContext.drinkingWater.percentile.toFixed(0)}th pctl
+                </Badge>
+              )}
+              {data.cesContext.hazardousWaste.percentile !== null && data.cesContext.hazardousWaste.percentile > 50 && (
+                <Badge variant="secondary" className="text-xs bg-indigo-100 text-indigo-800 border-indigo-200" data-testid="badge-hazwaste">
+                  Haz waste: {data.cesContext.hazardousWaste.percentile.toFixed(0)}th pctl
+                </Badge>
+              )}
+              {data.cesContext.toxicReleases.percentile !== null && data.cesContext.toxicReleases.percentile > 50 && (
+                <Badge variant="secondary" className="text-xs bg-indigo-100 text-indigo-800 border-indigo-200" data-testid="badge-toxic-releases">
+                  Toxic releases: {data.cesContext.toxicReleases.percentile.toFixed(0)}th pctl
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Land Cover Data from Sentinel 2 */}
         {data.landCoverContext && data.landCoverContext.classes.length > 0 && (
           <div className="mt-4 p-3 rounded-lg bg-sky-50 border border-sky-200" data-testid="section-land-cover">
@@ -672,7 +767,9 @@ Explore environmental data at Verde`;
         
         <div className="mt-6 text-center pb-2">
           <p className="text-xs text-muted-foreground italic">
-            Analysis powered by Verde AI with real EPA ECHO facility data.
+            {data.cesContext 
+              ? "Scores driven by CalEnviroScreen 4.0, EPA ECHO, WAQI, Sentinel-2, and Climate TRACE data."
+              : "Analysis powered by EPA ECHO, WAQI, Sentinel-2, Climate TRACE, and Verde AI."}
           </p>
         </div>
       </div>

@@ -8,6 +8,8 @@ import { queryNearbyEpaFacilities } from "./epaQuery";
 import { queryAirQuality, aqiToScore, getAqiCategory } from "./waqiQuery";
 import { queryClimateTraceSources, queryClimateTraceSourcesForMap, formatEmissions, getSectorLabel, ClimateTraceSource, queryEmissionsFromDatabase, queryEmissionsNearLocation, getEmissionsDatabaseCount } from "./climateTraceQuery";
 import { queryLandCover } from "./landCoverQuery";
+import { queryCalEnviroScreen, isCaliforniaLocation, CalEnviroScreenData } from "./calenviroScreenQuery";
+import { computeAirQualityScore, computeGreenSpaceScore, computePollutionScore, computeWaterQualityScore, computeWalkabilityScore, ScoreResult, CesData } from "./scoringEngine";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { stripeService } from "./stripeService";
 import { stripeStorage } from "./stripeStorage";
@@ -114,144 +116,165 @@ export async function registerRoutes(
     }
   });
 
+  // Helper: convert CalEnviroScreenData to flat CesData for scoring engine
+  function toCesData(ces: CalEnviroScreenData): CesData {
+    return {
+      CIscoreP: ces.overallPercentile ?? undefined,
+      ozoneP: ces.indicators.ozone.percentile ?? undefined,
+      pmP: ces.indicators.pm25.percentile ?? undefined,
+      dieselP: ces.indicators.dieselPM.percentile ?? undefined,
+      pesticidesP: ces.indicators.pesticides.percentile ?? undefined,
+      toxrelP: ces.indicators.toxicReleases.percentile ?? undefined,
+      trafficP: ces.indicators.traffic.percentile ?? undefined,
+      cleanupsP: ces.indicators.cleanups.percentile ?? undefined,
+      gwthreatsP: ces.indicators.groundwaterThreats.percentile ?? undefined,
+      hazP: ces.indicators.hazardousWaste.percentile ?? undefined,
+      drinkP: ces.indicators.drinkingWater.percentile ?? undefined,
+      iwbP: ces.indicators.impairedWaterBodies.percentile ?? undefined,
+      solidwasteP: ces.indicators.solidWaste.percentile ?? undefined,
+      polburdP: ces.pollutionBurden.percentile ?? undefined,
+      ozone: ces.indicators.ozone.value ?? undefined,
+      pm: ces.indicators.pm25.value ?? undefined,
+      diesel: ces.indicators.dieselPM.value ?? undefined,
+      pesticides: ces.indicators.pesticides.value ?? undefined,
+      toxrel: ces.indicators.toxicReleases.value ?? undefined,
+      traffic: ces.indicators.traffic.value ?? undefined,
+      cleanups: ces.indicators.cleanups.value ?? undefined,
+      gwthreats: ces.indicators.groundwaterThreats.value ?? undefined,
+      haz: ces.indicators.hazardousWaste.value ?? undefined,
+      drink: ces.indicators.drinkingWater.value ?? undefined,
+      iwb: ces.indicators.impairedWaterBodies.value ?? undefined,
+      solidwaste: ces.indicators.solidWaste.value ?? undefined,
+    };
+  }
+
   // Analysis API
   app.post(api.analysis.analyze.path, async (req, res) => {
     try {
       const startTime = Date.now();
       const { lat, lng } = api.analysis.analyze.input.parse(req.body);
 
-      // Get accurate location name via reverse geocoding (in parallel with EPA, WAQI, Climate TRACE, and Land Cover queries)
       const dataFetchStart = Date.now();
       
-      // Check if database has emissions data for fast local queries
       const dbCount = await getEmissionsDatabaseCount();
-      const useDatabase = dbCount > 1000; // Use database if we have sufficient data
+      const useDatabase = dbCount > 1000;
+      const isCalifornia = isCaliforniaLocation(lat, lng);
       
-      const [locationName, epaData, aqiData, climateData, landCoverData] = await Promise.all([
+      const [locationName, epaData, aqiData, climateData, landCoverData, cesRawData] = await Promise.all([
         reverseGeocode(lat, lng),
         queryNearbyEpaFacilities(lat, lng, 10),
         queryAirQuality(lat, lng),
         useDatabase ? queryEmissionsNearLocation(lat, lng, 50) : queryClimateTraceSources(lat, lng, 50),
-        queryLandCover(lat, lng, 1000) // 1km radius for land cover analysis
+        queryLandCover(lat, lng, 1000),
+        isCalifornia ? queryCalEnviroScreen(lat, lng) : Promise.resolve(null),
       ]);
       const dataFetchTime = Date.now() - dataFetchStart;
       
-      console.log(`[TIMING] Data fetch: ${dataFetchTime}ms | Location: ${locationName}, EPA: ${epaData.totalFacilities} facilities, AQI: ${aqiData.aqi}, Climate TRACE: ${climateData.sources.length} sources (DB: ${useDatabase}), Land Cover: ${landCoverData.dominantClass}`);
+      console.log(`[TIMING] Data fetch: ${dataFetchTime}ms | Location: ${locationName}, EPA: ${epaData.totalFacilities} facilities, AQI: ${aqiData.aqi}, Climate TRACE: ${climateData.sources.length} sources (DB: ${useDatabase}), Land Cover: ${landCoverData.dominantClass}, CES: ${cesRawData ? `tract ${cesRawData.censusTract} (${cesRawData.overallPercentile?.toFixed(1)}th pctl)` : 'N/A'}`);
       
-      // Build context about nearby facilities and air quality
-      let facilityContext = "";
-      let airQualityContext = "";
+      // --- Deterministic scoring ---
+      const cesData = cesRawData ? toCesData(cesRawData) : null;
+      const landCoverInput = landCoverData.totalPixels > 0 ? {
+        vegetationPercentage: landCoverData.vegetationPercentage,
+        treePercentage: landCoverData.treePercentage,
+        builtPercentage: landCoverData.builtPercentage,
+        waterPercentage: landCoverData.waterPercentage,
+        cropPercentage: landCoverData.cropPercentage,
+      } : null;
+      const epaInput = epaData.totalFacilities > 0 ? {
+        totalFacilities: epaData.totalFacilities,
+        majorFacilities: epaData.majorFacilities,
+        facilitiesWithViolations: epaData.facilitiesWithViolations,
+      } : null;
+      const climateInput = climateData.sources.length > 0 ? {
+        totalEmissions: climateData.totalEmissions,
+        sources: climateData.sources.map(s => ({ emissions: s.emissions })),
+      } : null;
+
+      const deterministicScores: Record<string, ScoreResult | null> = {
+        airQuality: computeAirQualityScore(aqiData.aqi, cesData),
+        greenSpace: computeGreenSpaceScore(landCoverInput, cesData),
+        pollution: computePollutionScore(epaInput, cesData, climateInput),
+        waterQuality: computeWaterQualityScore(cesData),
+        walkability: computeWalkabilityScore(cesData),
+      };
+
+      const scoreSources: Record<string, string> = {};
+      const finalScores: Record<string, number> = {};
+      const finalScoreDetails: Record<string, { value: number; factors: string[]; tips: string[] }> = {};
+
+      for (const [key, result] of Object.entries(deterministicScores)) {
+        if (result) {
+          finalScores[key] = result.score;
+          finalScoreDetails[key] = { value: result.score, factors: result.factors, tips: result.tips };
+          if (cesData && (key === "airQuality" || key === "waterQuality" || key === "walkability" || key === "pollution")) {
+            scoreSources[key] = "calenviroscreen";
+          } else {
+            scoreSources[key] = "deterministic";
+          }
+        }
+      }
+
+      const aiNeededScores = Object.keys(deterministicScores).filter(k => finalScores[k] === undefined);
+      console.log(`[SCORING] Deterministic: ${Object.keys(finalScores).join(', ') || 'none'} | AI needed: ${aiNeededScores.join(', ') || 'none'}`);
+
+      // --- Build AI context (always needed for summary, and for missing scores) ---
+      let dataContext = "";
       
-      // Add real-time air quality data if available
       if (aqiData.aqi !== null) {
         const aqiCategory = getAqiCategory(aqiData.aqi);
-        const suggestedScore = aqiToScore(aqiData.aqi);
         const pollutantInfo = Object.entries(aqiData.pollutants)
           .filter(([_, v]) => v !== undefined)
           .map(([k, v]) => `${k.toUpperCase()}: ${v}`)
           .join(", ");
-        
-        // Only include score guidance if we have a valid calculated score
-        const scoreGuidance = suggestedScore !== null 
-          ? `IMPORTANT: Your airQuality score MUST be close to ${suggestedScore} (derived from real AQI of ${aqiData.aqi}).
-AQI 0-50 = Good (score 90-100), AQI 51-100 = Moderate (score 60-89), AQI 101-150 = Unhealthy for Sensitive (score 40-59), AQI 151-200 = Unhealthy (score 25-39), AQI 201+ = Very Unhealthy/Hazardous (score <25).`
-          : `Use the AQI value of ${aqiData.aqi} to inform your airQuality score.`;
-        
-        airQualityContext = `
-REAL-TIME AIR QUALITY DATA:
-- Current AQI: ${aqiData.aqi} (${aqiCategory})
-- Nearest monitoring station: ${aqiData.stationName || "Unknown"}
-- Dominant pollutant: ${aqiData.dominantPollutant?.toUpperCase() || "Not specified"}
-- Pollutant readings: ${pollutantInfo || "Not available"}
-- Last updated: ${aqiData.lastUpdated || "Unknown"}
-
-${scoreGuidance}
-`;
-      } else {
-        airQualityContext = `
-AIR QUALITY DATA: No real-time AQI data available for this location. Estimate based on EPA facility data and general knowledge.
-`;
+        dataContext += `\nAIR QUALITY: AQI ${aqiData.aqi} (${aqiCategory}), station: ${aqiData.stationName || "Unknown"}, pollutant: ${aqiData.dominantPollutant?.toUpperCase() || "N/A"}, readings: ${pollutantInfo || "N/A"}`;
       }
+      
       if (epaData.totalFacilities > 0) {
-        facilityContext = `
-REAL EPA DATA (within 10 miles):
-- Total regulated facilities: ${epaData.totalFacilities}
-- Major emitters: ${epaData.majorFacilities}
-- Facilities with violations: ${epaData.facilitiesWithViolations}
-- Industry breakdown: ${Object.entries(epaData.industryBreakdown).map(([k, v]) => `${k}: ${v}`).join(", ")}
-- Nearest facilities: ${epaData.nearbyFacilities.slice(0, 5).map(f => `${f.name} (${f.type}, ${f.distance.toFixed(1)} mi${f.hasViolation ? ", HAS VIOLATIONS" : ""})`).join("; ")}
-
-Use this real data to inform your pollution and air quality scores. More facilities, major emitters, and violations should lower scores.`;
-      } else {
-        facilityContext = `
-EPA DATA: No regulated industrial facilities found within 10 miles. This is a positive indicator for pollution/air quality scores.`;
+        dataContext += `\nEPA FACILITIES (10mi): ${epaData.totalFacilities} total, ${epaData.majorFacilities} major, ${epaData.facilitiesWithViolations} with violations. Industries: ${Object.entries(epaData.industryBreakdown).map(([k, v]) => `${k}: ${v}`).join(", ")}`;
       }
       
-      // Add Climate TRACE global emissions context
-      let climateContext = "";
       if (climateData.sources.length > 0) {
-        const sectorSummary = Object.entries(climateData.sectorBreakdown)
-          .sort((a, b) => b[1].emissions - a[1].emissions)
-          .slice(0, 5)
-          .map(([sector, data]) => `${getSectorLabel(sector)}: ${data.count} sources (${formatEmissions(data.emissions)} tonnes CO2e)`)
-          .join("; ");
-        
-        const topSources = climateData.sources
-          .slice(0, 5)
-          .map(s => `${s.name} (${getSectorLabel(s.sector)}, ${s.emissions ? formatEmissions(s.emissions) + ' tonnes CO2e' : 'emissions data pending'})`)
-          .join("; ");
-        
-        climateContext = `
-CLIMATE TRACE NATIONAL EMISSIONS DATA (for this country):
-- Top emission sources tracked: ${climateData.sources.length}
-- Total CO2e emissions: ${formatEmissions(climateData.totalEmissions)} tonnes/year
-- Sector breakdown: ${sectorSummary}
-- Largest emitters: ${topSources}
-
-This national emissions data covers power plants, factories, and industrial facilities tracked by Climate TRACE satellite monitoring. These are country-level statistics that provide context for the broader emissions landscape.
-
-IMPORTANT: For non-US locations where EPA data is not available, use the Climate TRACE emissions data to inform the pollution/cleanliness score. Higher emissions from the country indicate potential industrial impact. Consider factors like:
-- Countries with very high total emissions may have more industrial pollution
-- Power sector emissions suggest fossil fuel dependency
-- Oil & gas sector presence indicates potential local pollution sources`;
+        const topSources = climateData.sources.slice(0, 3).map(s => `${s.name} (${getSectorLabel(s.sector)})`).join("; ");
+        dataContext += `\nEMISSIONS: ${climateData.sources.length} sources, ${formatEmissions(climateData.totalEmissions)} tonnes CO2e/yr. Top: ${topSources}`;
       }
       
-      const prompt = `
-Analyze the environmental quality for the location: "${locationName}" (Coordinates: ${lat}, ${lng}).
-This location has been verified via reverse geocoding - use this exact location name in your response.
-${airQualityContext}
-${facilityContext}
-${climateContext}
+      if (cesRawData) {
+        dataContext += `\nCALENVIROSCREEN 4.0 (Census Tract ${cesRawData.censusTract}): Overall percentile ${cesRawData.overallPercentile?.toFixed(1)}%, Pollution burden ${cesRawData.pollutionBurden.percentile?.toFixed(1)}%`;
+        if (cesRawData.indicators.cleanups.value) {
+          dataContext += `, Remediation sites: ${cesRawData.indicators.cleanups.value}`;
+        }
+        if (cesRawData.indicators.groundwaterThreats.percentile) {
+          dataContext += `, Groundwater threats: ${cesRawData.indicators.groundwaterThreats.percentile.toFixed(1)}th pctl`;
+        }
+      }
+      
+      if (landCoverData.totalPixels > 0) {
+        dataContext += `\nLAND COVER: ${landCoverData.dominantClass}, trees ${landCoverData.treePercentage}%, vegetation ${landCoverData.vegetationPercentage}%, built ${landCoverData.builtPercentage}%`;
+      }
 
-Provide a JSON response with the following fields:
-- location: Use "${locationName}" or a slightly more descriptive version (e.g., add a neighborhood if known)
-- summary: A 2-3 sentence summary of the environmental vibe. If EPA facilities were found, mention the industrial context.
-- scores: An object with numeric scores (0-100) for:
-  - airQuality (100 is best) - factor in nearby major emitters
-  - waterQuality (100 is best)
-  - walkability (100 is best)
-  - greenSpace (100 is best)
-  - pollution (100 is cleanest/least pollution) - for US locations use EPA facility count and violations; for non-US locations use Climate TRACE emissions data to estimate industrial pollution impact
-- scoreDetails: An object with detailed breakdown for each score category. Each has:
-  - value: the score (same as in scores)
-  - factors: array of 2-4 brief reasons affecting this score (e.g., "Heavy industrial activity within 5 miles", "Multiple EPA facilities with violations")
-  - tips: array of 1-2 suggestions for improvement or things to be aware of
-  
-Example scoreDetails entry:
-"airQuality": {
-  "value": 45,
-  "factors": ["73 major emitters within 10 miles", "Petrochemical industry presence", "Highway traffic corridor"],
-  "tips": ["Check daily AQI before outdoor activities", "Consider indoor air filtration"]
-}
+      // Build AI prompt - only request scores that weren't computed deterministically
+      const scoreInstructions = aiNeededScores.length > 0
+        ? `Generate scores (0-100) ONLY for these categories: ${aiNeededScores.join(", ")}. The following scores are already computed from hard data and should NOT be included: ${Object.keys(finalScores).join(", ")}.`
+        : `All scores have been computed from hard data. Do NOT include any scores.`;
 
-Return ONLY valid JSON.
-      `;
+      const prompt = `Analyze the environmental quality for "${locationName}" (${lat}, ${lng}).
+${dataContext}
+
+Provide a JSON response:
+- location: "${locationName}" (or slightly more descriptive)
+- summary: 2-3 sentence environmental summary. ${cesRawData ? 'Mention CalEnviroScreen data and any remediation sites if relevant.' : epaData.totalFacilities > 0 ? 'Mention the industrial context.' : ''}
+${aiNeededScores.length > 0 ? `- scores: Object with ONLY these keys: ${aiNeededScores.join(", ")} (each 0-100)
+- scoreDetails: Object with ONLY these keys: ${aiNeededScores.join(", ")}. Each has value (number), factors (array of 2-3 strings), tips (array of 1-2 strings).` : ''}
+
+${scoreInstructions}
+Return ONLY valid JSON.`;
 
       const aiStart = Date.now();
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-          { role: "system", content: "You are an environmental data analyst. Use the provided EPA data to generate accurate, data-driven scores. Return JSON only." },
+          { role: "system", content: "You are an environmental data analyst. Return JSON only. Only generate scores for categories explicitly requested." },
           { role: "user", content: prompt }
         ],
         response_format: { type: "json_object" },
@@ -264,7 +287,33 @@ Return ONLY valid JSON.
 
       const aiData = JSON.parse(content);
       
-      // Build deterministic epaContext from actual EPA query results
+      // Merge AI scores for categories that needed it
+      if (aiData.scores) {
+        for (const key of aiNeededScores) {
+          if (aiData.scores[key] !== undefined) {
+            finalScores[key] = aiData.scores[key];
+            scoreSources[key] = "ai";
+          }
+        }
+      }
+      if (aiData.scoreDetails) {
+        for (const key of aiNeededScores) {
+          if (aiData.scoreDetails[key]) {
+            finalScoreDetails[key] = aiData.scoreDetails[key];
+          }
+        }
+      }
+
+      // Ensure all five scores exist (fallback to 50 if both deterministic and AI failed)
+      for (const key of ["airQuality", "waterQuality", "walkability", "greenSpace", "pollution"]) {
+        if (finalScores[key] === undefined) {
+          finalScores[key] = 50;
+          scoreSources[key] = "ai";
+          finalScoreDetails[key] = { value: 50, factors: ["Insufficient data for this location"], tips: ["Check back as more data sources become available"] };
+        }
+      }
+
+      // Build context objects for frontend
       const topIndustries = Object.entries(epaData.industryBreakdown)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
@@ -277,7 +326,6 @@ Return ONLY valid JSON.
         topIndustries,
       };
       
-      // Build AQI context if available
       const aqiContext = aqiData.aqi !== null ? {
         aqi: aqiData.aqi,
         category: getAqiCategory(aqiData.aqi),
@@ -286,7 +334,6 @@ Return ONLY valid JSON.
         lastUpdated: aqiData.lastUpdated,
       } : null;
       
-      // Build Climate TRACE context if available
       const climateTraceContext = climateData.sources.length > 0 ? {
         sourcesCount: climateData.sources.length,
         totalEmissions: climateData.totalEmissions,
@@ -308,7 +355,6 @@ Return ONLY valid JSON.
           })),
       } : null;
       
-      // Build Land Cover context if available
       const landCoverContext = landCoverData.totalPixels > 0 ? {
         classes: landCoverData.classes.slice(0, 6),
         dominantClass: landCoverData.dominantClass,
@@ -318,17 +364,46 @@ Return ONLY valid JSON.
         cropPercentage: landCoverData.cropPercentage,
         vegetationPercentage: landCoverData.vegetationPercentage,
       } : null;
+
+      const cesContext = cesRawData ? {
+        censusTract: cesRawData.censusTract,
+        overallPercentile: cesRawData.overallPercentile,
+        pollutionBurden: cesRawData.pollutionBurden,
+        cleanupSites: cesRawData.indicators.cleanups,
+        groundwaterThreats: cesRawData.indicators.groundwaterThreats,
+        drinkingWater: cesRawData.indicators.drinkingWater,
+        hazardousWaste: cesRawData.indicators.hazardousWaste,
+        impairedWaterBodies: cesRawData.indicators.impairedWaterBodies,
+        toxicReleases: cesRawData.indicators.toxicReleases,
+        pesticides: cesRawData.indicators.pesticides,
+      } : null;
       
-      // Merge AI response with server-computed data
       const totalTime = Date.now() - startTime;
       console.log(`[TIMING] Total /api/analyze: ${totalTime}ms (data: ${dataFetchTime}ms, AI: ${aiTime}ms)`);
       
       res.json({
-        ...aiData,
+        location: aiData.location || locationName,
+        summary: aiData.summary || `Environmental analysis for ${locationName}.`,
+        scores: {
+          airQuality: finalScores.airQuality,
+          waterQuality: finalScores.waterQuality,
+          walkability: finalScores.walkability,
+          greenSpace: finalScores.greenSpace,
+          pollution: finalScores.pollution,
+        },
+        scoreDetails: {
+          airQuality: finalScoreDetails.airQuality,
+          waterQuality: finalScoreDetails.waterQuality,
+          walkability: finalScoreDetails.walkability,
+          greenSpace: finalScoreDetails.greenSpace,
+          pollution: finalScoreDetails.pollution,
+        },
+        scoreSources,
         epaContext,
         aqiContext,
         climateTraceContext,
         landCoverContext,
+        cesContext,
       });
 
     } catch (error) {

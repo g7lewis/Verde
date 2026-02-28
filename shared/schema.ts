@@ -121,6 +121,22 @@ export const analysisResponseSchema = z.object({
     cropPercentage: z.number(),
     vegetationPercentage: z.number(),
   }).nullable().optional(),
+  cesContext: z.object({
+    censusTract: z.string(),
+    overallPercentile: z.number().nullable(),
+    pollutionBurden: z.object({
+      score: z.number().nullable(),
+      percentile: z.number().nullable(),
+    }),
+    cleanupSites: z.object({ value: z.number().nullable(), percentile: z.number().nullable() }),
+    groundwaterThreats: z.object({ value: z.number().nullable(), percentile: z.number().nullable() }),
+    drinkingWater: z.object({ value: z.number().nullable(), percentile: z.number().nullable() }),
+    hazardousWaste: z.object({ value: z.number().nullable(), percentile: z.number().nullable() }),
+    impairedWaterBodies: z.object({ value: z.number().nullable(), percentile: z.number().nullable() }),
+    toxicReleases: z.object({ value: z.number().nullable(), percentile: z.number().nullable() }),
+    pesticides: z.object({ value: z.number().nullable(), percentile: z.number().nullable() }),
+  }).nullable().optional(),
+  scoreSources: z.record(z.string(), z.string()).optional(),
 });
 
 export type AnalysisResponse = z.infer<typeof analysisResponseSchema>;
