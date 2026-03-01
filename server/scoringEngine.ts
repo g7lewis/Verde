@@ -135,7 +135,15 @@ export function computeGreenSpaceScore(
   const builtPenalty = Math.min(landCoverData.builtPercentage * 0.5, 30);
   const waterBonus = Math.min(landCoverData.waterPercentage * 0.3, 10);
 
-  let finalScore = clamp(vegScore + treeBonus - builtPenalty + waterBonus + 15, 0, 100);
+  let rawScore = vegScore + treeBonus - builtPenalty + waterBonus + 15;
+  let finalScore = clamp(rawScore, 0, 100);
+
+  if (landCoverData.builtPercentage > 90) {
+    const urbanFloor = 30 - Math.floor((landCoverData.builtPercentage - 90) / 2);
+    finalScore = Math.max(finalScore, clamp(urbanFloor, 20, 30));
+  }
+
+  finalScore = Math.max(finalScore, 10);
 
   factors.push(`Vegetation cover: ${landCoverData.vegetationPercentage.toFixed(1)}%`);
   factors.push(`Tree cover: ${landCoverData.treePercentage.toFixed(1)}%`);

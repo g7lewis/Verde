@@ -48,7 +48,7 @@ function emptyResult(): LandCoverResult {
 export async function queryLandCover(
   lat: number,
   lng: number,
-  radiusMeters: number = 1000
+  radiusMeters: number = 3000
 ): Promise<LandCoverResult> {
   try {
     const baseUrl = "https://ic.imagery1.arcgis.com/arcgis/rest/services/Sentinel2_10m_LandCover/ImageServer/computeStatisticsHistograms";
