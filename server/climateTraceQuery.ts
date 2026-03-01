@@ -507,10 +507,18 @@ export async function queryEmissionsNearLocation(
   }
 }
 
+let _dbCountCache: { value: number; timestamp: number } | null = null;
+const DB_COUNT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 export async function getEmissionsDatabaseCount(): Promise<number> {
+  if (_dbCountCache && Date.now() - _dbCountCache.timestamp < DB_COUNT_CACHE_TTL_MS) {
+    return _dbCountCache.value;
+  }
   try {
     const result = await db.select({ count: sql<number>`count(*)` }).from(emissionsSources);
-    return Number(result[0].count);
+    const count = Number(result[0].count);
+    _dbCountCache = { value: count, timestamp: Date.now() };
+    return count;
   } catch {
     return 0;
   }

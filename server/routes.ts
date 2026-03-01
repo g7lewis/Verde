@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import OpenAI from "openai";
+import rateLimit from "express-rate-limit";
 import { queryNearbyEpaFacilities } from "./epaQuery";
 import { queryAirQuality, aqiToScore, getAqiCategory } from "./waqiQuery";
 import { queryClimateTraceSources, queryClimateTraceSourcesForMap, formatEmissions, getSectorLabel, ClimateTraceSource, queryEmissionsFromDatabase, queryEmissionsNearLocation, getEmissionsDatabaseCount } from "./climateTraceQuery";
@@ -14,6 +15,34 @@ import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integra
 import { stripeService } from "./stripeService";
 import { stripeStorage } from "./stripeStorage";
 import { getStripePublishableKey } from "./stripeClient";
+
+// --- Analysis response cache ---
+const ANALYZE_CACHE_MAX = 500;
+const ANALYZE_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const analyzeCache = new Map<string, { data: any; timestamp: number }>();
+
+function getAnalyzeCacheKey(lat: number, lng: number): string {
+  return `${lat.toFixed(3)},${lng.toFixed(3)}`;
+}
+
+function getFromAnalyzeCache(key: string): any | null {
+  const entry = analyzeCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > ANALYZE_CACHE_TTL_MS) {
+    analyzeCache.delete(key);
+    return null;
+  }
+  return entry.data;
+}
+
+function setInAnalyzeCache(key: string, data: any): void {
+  // Evict oldest entries if at capacity
+  if (analyzeCache.size >= ANALYZE_CACHE_MAX) {
+    const oldest = analyzeCache.keys().next().value;
+    if (oldest !== undefined) analyzeCache.delete(oldest);
+  }
+  analyzeCache.set(key, { data, timestamp: Date.now() });
+}
 
 // Reverse geocode coordinates to get accurate location name
 async function reverseGeocode(lat: number, lng: number): Promise<string> {
@@ -96,7 +125,27 @@ export async function registerRoutes(
   // Setup authentication (BEFORE other routes)
   await setupAuth(app);
   registerAuthRoutes(app);
-  
+
+  // --- Rate limiting ---
+  const generalLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Too many requests, please try again later" },
+  });
+  app.use("/api/", generalLimiter);
+
+  const strictLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Rate limit exceeded. Please wait before making another request." },
+  });
+  app.use(api.analysis.analyze.path, strictLimiter);
+  app.use(api.analysis.askQuestion.path, strictLimiter);
+
   // Pins API
   app.get(api.pins.list.path, async (req, res) => {
     const pins = await storage.getPins();
@@ -153,6 +202,14 @@ export async function registerRoutes(
     try {
       const startTime = Date.now();
       const { lat, lng } = api.analysis.analyze.input.parse(req.body);
+
+      // Check cache first
+      const cacheKey = getAnalyzeCacheKey(lat, lng);
+      const cached = getFromAnalyzeCache(cacheKey);
+      if (cached) {
+        console.log(`[CACHE HIT] /api/analyze for ${cacheKey}`);
+        return res.json(cached);
+      }
 
       const dataFetchStart = Date.now();
       
@@ -394,8 +451,8 @@ Return ONLY valid JSON.`;
       
       const totalTime = Date.now() - startTime;
       console.log(`[TIMING] Total /api/analyze: ${totalTime}ms (data: ${dataFetchTime}ms, AI: ${aiTime}ms)`);
-      
-      res.json({
+
+      const responseData = {
         location: locationName,
         summary: aiData.summary || `Environmental analysis for ${locationName}.`,
         scores: {
@@ -418,7 +475,10 @@ Return ONLY valid JSON.`;
         climateTraceContext,
         landCoverContext,
         cesContext,
-      });
+      };
+
+      setInAnalyzeCache(cacheKey, responseData);
+      res.json(responseData);
 
     } catch (error) {
       console.error("Analysis error:", error);

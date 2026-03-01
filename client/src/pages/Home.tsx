@@ -72,19 +72,23 @@ function MapController({ center }: { center: [number, number] | null }) {
   return null;
 }
 
-function LocationMarker({ onSelectLocation, onCenterChange }: { 
+function LocationMarker({ onSelectLocation, onViewportChange }: {
   onSelectLocation: (lat: number, lng: number) => void;
-  onCenterChange?: (lat: number, lng: number) => void;
+  onViewportChange?: (center: [number, number], bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number }) => void;
 }) {
   useMapEvents({
     click(e: L.LeafletMouseEvent) {
       onSelectLocation(e.latlng.lat, e.latlng.lng);
     },
     moveend(e) {
-      if (onCenterChange) {
+      if (onViewportChange) {
         const map = e.target;
-        const center = map.getCenter();
-        onCenterChange(center.lat, center.lng);
+        const c = map.getCenter();
+        const b = map.getBounds();
+        onViewportChange(
+          [c.lat, c.lng],
+          { minLat: b.getSouth(), maxLat: b.getNorth(), minLng: b.getWest(), maxLng: b.getEast() }
+        );
       }
     },
   });
@@ -95,7 +99,9 @@ function LocationMarker({ onSelectLocation, onCenterChange }: {
 
 export default function Home() {
   const [center, setCenter] = useState<[number, number] | null>(null);
-  const [viewportCenter, setViewportCenter] = useState<[number, number] | null>(null); // Tracks map viewport for data fetching
+  const [viewportCenter, setViewportCenter] = useState<[number, number] | null>(null);
+  const [viewportBounds, setViewportBounds] = useState<{ minLat: number; maxLat: number; minLng: number; maxLng: number } | null>(null);
+  const lastFetchCenter = useRef<[number, number] | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [layers, setLayers] = useState({
     air: true,
@@ -134,15 +140,25 @@ export default function Home() {
   const analyze = useAnalyzeLocation();
   const { stats, levelInfo, newBadges, recordPinDrop, recordExploration, clearNewBadges } = useGamification();
   
-  // Debounced viewport center change handler for map panning (doesn't trigger flyTo)
+  // Debounced viewport change handler for map panning (doesn't trigger flyTo)
   const centerDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const handleMapCenterChange = useCallback((lat: number, lng: number) => {
+  const MOVE_THRESHOLD_DEG = 0.5; // Only re-fetch if center moved >0.5 degrees
+
+  const handleViewportChange = useCallback((newCenter: [number, number], bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number }) => {
     if (centerDebounceRef.current) {
       clearTimeout(centerDebounceRef.current);
     }
     centerDebounceRef.current = setTimeout(() => {
-      setViewportCenter([lat, lng]); // Only update viewport, not main center
-    }, 500); // Debounce by 500ms
+      // Skip fetch if center hasn't moved significantly
+      if (lastFetchCenter.current) {
+        const dLat = Math.abs(newCenter[0] - lastFetchCenter.current[0]);
+        const dLng = Math.abs(newCenter[1] - lastFetchCenter.current[1]);
+        if (dLat < MOVE_THRESHOLD_DEG && dLng < MOVE_THRESHOLD_DEG) return;
+      }
+      lastFetchCenter.current = newCenter;
+      setViewportCenter(newCenter);
+      setViewportBounds(bounds);
+    }, 2000);
   }, []);
   
   // Cleanup debounce timeout on unmount
@@ -197,30 +213,27 @@ export default function Home() {
   }, []);
 
   // Fetch emissions sources when climate layer is enabled
-  // Use viewportCenter (from panning) if available, otherwise fall back to center
+  // Use viewportBounds (from panning) if available, otherwise fall back to center with defaults
   const effectiveCenter = viewportCenter || center;
   useEffect(() => {
     if (!layers.climate || !effectiveCenter) {
       setEmissionsSources([]);
       return;
     }
-    
+
     const fetchEmissions = async () => {
       setLoadingEmissions(true);
       try {
-        // Use viewport-based filtering for better performance
-        // Approximate viewport bounds based on center (roughly 10 degrees each direction)
-        const latDelta = 10;
-        const lngDelta = 15;
-        const minLat = effectiveCenter[0] - latDelta;
-        const maxLat = effectiveCenter[0] + latDelta;
-        const minLng = effectiveCenter[1] - lngDelta;
-        const maxLng = effectiveCenter[1] + lngDelta;
-        
-        const response = await fetch(`/api/emissions-sources?minLat=${minLat}&maxLat=${maxLat}&minLng=${minLng}&maxLng=${maxLng}`);
+        const bounds = viewportBounds || {
+          minLat: effectiveCenter[0] - 5,
+          maxLat: effectiveCenter[0] + 5,
+          minLng: effectiveCenter[1] - 5,
+          maxLng: effectiveCenter[1] + 5,
+        };
+
+        const response = await fetch(`/api/emissions-sources?minLat=${bounds.minLat}&maxLat=${bounds.maxLat}&minLng=${bounds.minLng}&maxLng=${bounds.maxLng}`);
         if (response.ok) {
           const data = await response.json();
-          // Limit to top 500 sources for map performance
           const sources = (data.sources || []).slice(0, 500);
           setEmissionsSources(sources);
         }
@@ -230,9 +243,9 @@ export default function Home() {
         setLoadingEmissions(false);
       }
     };
-    
+
     fetchEmissions();
-  }, [layers.climate, effectiveCenter]);
+  }, [layers.climate, effectiveCenter, viewportBounds]);
 
   // Fetch EPA facilities when pollution layer is enabled
   useEffect(() => {
@@ -418,9 +431,9 @@ export default function Home() {
             )}
             
             <MapController center={center} />
-            <LocationMarker 
+            <LocationMarker
               onSelectLocation={(lat, lng) => handleLocationSelect(lat, lng)}
-              onCenterChange={handleMapCenterChange}
+              onViewportChange={handleViewportChange}
             />
 
             {/* Visual Layers */}
