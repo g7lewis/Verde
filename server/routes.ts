@@ -311,8 +311,8 @@ export async function registerRoutes(
         reverseGeocode(lat, lng),
         queryNearbyEpaFacilities(lat, lng, 10),
         queryAirQuality(lat, lng),
-        useDatabase ? queryEmissionsNearLocation(lat, lng, 50) : queryClimateTraceSources(lat, lng, 50),
-        queryLandCover(lat, lng, 1000),
+        useDatabase ? queryEmissionsNearLocation(lat, lng, 15) : queryClimateTraceSources(lat, lng, 15),
+        queryLandCover(lat, lng),
         isCalifornia ? queryCalEnviroScreen(lat, lng) : Promise.resolve(null),
       ]);
       const dataFetchTime = Date.now() - dataFetchStart;
@@ -347,7 +347,7 @@ export async function registerRoutes(
           sector: s.sector,
           emissions: s.emissions,
         })),
-        radiusKm: 50,
+        radiusKm: 15,
       } : null;
 
       const deterministicScores: Record<string, ScoreResult | null> = {

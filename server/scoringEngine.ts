@@ -331,23 +331,25 @@ export function computeClimateEmissionsScore(
   const emissionsMt = climateInput.totalEmissions / 1_000_000;
 
   let finalScore: number;
-  if (emissionsMt <= 0.01) {
+  if (emissionsMt <= 0.001) {
     finalScore = 95;
+  } else if (emissionsMt <= 0.01) {
+    finalScore = 88;
   } else if (emissionsMt <= 0.1) {
-    finalScore = 85;
-  } else if (emissionsMt <= 1) {
-    finalScore = 75;
+    finalScore = 78;
+  } else if (emissionsMt <= 0.5) {
+    finalScore = 70 - Math.min((emissionsMt - 0.1) * 25, 15);
+  } else if (emissionsMt <= 2) {
+    finalScore = 55 - Math.min((emissionsMt - 0.5) * 10, 15);
   } else if (emissionsMt <= 10) {
-    finalScore = 65 - Math.min((emissionsMt - 1) * 2.5, 20);
-  } else if (emissionsMt <= 100) {
-    finalScore = 45 - Math.min((emissionsMt - 10) * 0.3, 20);
+    finalScore = 40 - Math.min((emissionsMt - 2) * 2, 15);
   } else {
-    finalScore = 25 - Math.min(Math.log10(emissionsMt / 100) * 10, 20);
+    finalScore = 25 - Math.min(Math.log10(emissionsMt / 10) * 8, 15);
   }
 
   const sectorCount = Object.keys(climateInput.sectorBreakdown).length;
-  if (sectorCount > 10) {
-    finalScore -= Math.min((sectorCount - 10) * 0.5, 5);
+  if (sectorCount > 5) {
+    finalScore -= Math.min((sectorCount - 5) * 0.5, 5);
   }
 
   factors.push(`${climateInput.sourcesCount} emission sources within ${climateInput.radiusKm}km`);
@@ -373,7 +375,7 @@ export function computeClimateEmissionsScore(
 
   if (cesData && cesData.trafficP !== undefined) {
     const trafficScore = percentileToScore(cesData.trafficP)!;
-    finalScore = clamp(finalScore * 0.7 + trafficScore * 0.3, 0, 100);
+    finalScore = clamp(finalScore * 0.8 + trafficScore * 0.2, 0, 100);
     factors.push(`CES traffic density: ${cesData.trafficP.toFixed(0)}th percentile`);
   }
 
