@@ -338,7 +338,7 @@ export async function registerRoutes(
         sources: climateData.sources.map(s => ({ emissions: s.emissions })),
       } : null;
 
-      const climateEmissionsInput: ClimateEmissionsInput | null = climateData.sources.length > 0 ? {
+      const climateEmissionsInput: ClimateEmissionsInput | null = {
         totalEmissions: climateData.totalEmissions,
         sourcesCount: climateData.sources.length,
         sectorBreakdown: climateData.sectorBreakdown,
@@ -348,7 +348,7 @@ export async function registerRoutes(
           emissions: s.emissions,
         })),
         radiusKm: 15,
-      } : null;
+      };
 
       const deterministicScores: Record<string, ScoreResult | null> = {
         airQuality: computeAirQualityScore(aqiData.aqi, cesData),

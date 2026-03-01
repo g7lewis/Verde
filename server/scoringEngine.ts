@@ -321,8 +321,16 @@ export function computeClimateEmissionsScore(
   climateInput: ClimateEmissionsInput | null,
   cesData?: CesData | null
 ): ScoreResult | null {
-  if (!climateInput || (climateInput.sourcesCount === 0 && climateInput.totalEmissions === 0)) {
+  if (!climateInput) {
     return null;
+  }
+
+  if (climateInput.sourcesCount === 0 && climateInput.totalEmissions === 0) {
+    return {
+      score: 97,
+      factors: ["No emission sources detected within 15km"],
+      tips: ["Minimal industrial emissions — this area has excellent air and climate conditions"],
+    };
   }
 
   const factors: string[] = [];
