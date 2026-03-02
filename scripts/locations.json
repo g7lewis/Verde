@@ -1,0 +1,1388 @@
+[
+  {
+    "name": "Los Angeles",
+    "lat": 34.0522,
+    "lng": -118.2437,
+    "tags": ["city", "major-city", "southern-california"],
+    "interest": "Largest city in California and second-largest in the US; major economic, cultural, and entertainment hub"
+  },
+  {
+    "name": "San Francisco",
+    "lat": 37.7749,
+    "lng": -122.4194,
+    "tags": ["city", "major-city", "northern-california", "bay-area"],
+    "interest": "Global tech and finance center on a hilly peninsula; iconic for fog, cable cars, and progressive politics"
+  },
+  {
+    "name": "San Diego",
+    "lat": 32.7157,
+    "lng": -117.1611,
+    "tags": ["city", "major-city", "southern-california", "coastal"],
+    "interest": "Major military and biotech hub near the Mexican border with year-round mild climate"
+  },
+  {
+    "name": "Sacramento",
+    "lat": 38.5816,
+    "lng": -121.4944,
+    "tags": ["city", "major-city", "central-valley", "state-capital"],
+    "interest": "California state capital at the confluence of the Sacramento and American Rivers"
+  },
+  {
+    "name": "San Jose",
+    "lat": 37.3382,
+    "lng": -121.8863,
+    "tags": ["city", "major-city", "bay-area", "silicon-valley"],
+    "interest": "Self-proclaimed capital of Silicon Valley and the most populous city in the Bay Area"
+  },
+  {
+    "name": "Oakland",
+    "lat": 37.8044,
+    "lng": -122.2712,
+    "tags": ["city", "major-city", "bay-area"],
+    "interest": "Major West Coast port city with rich cultural diversity and growing tech presence"
+  },
+  {
+    "name": "Fresno",
+    "lat": 36.7378,
+    "lng": -119.7871,
+    "tags": ["city", "major-city", "central-valley", "agriculture"],
+    "interest": "Agricultural powerhouse in the heart of the San Joaquin Valley; leading raisin and almond producer"
+  },
+  {
+    "name": "Long Beach",
+    "lat": 33.7701,
+    "lng": -118.1937,
+    "tags": ["city", "major-city", "southern-california", "coastal"],
+    "interest": "Home to one of the busiest container ports in the Western Hemisphere"
+  },
+  {
+    "name": "Anaheim",
+    "lat": 33.8366,
+    "lng": -117.9143,
+    "tags": ["city", "major-city", "southern-california", "orange-county"],
+    "interest": "Home to Disneyland Resort and Angel Stadium; major tourism economy"
+  },
+  {
+    "name": "Santa Ana",
+    "lat": 33.7455,
+    "lng": -117.8677,
+    "tags": ["city", "major-city", "southern-california", "orange-county"],
+    "interest": "Orange County seat with the highest population density in the county; predominantly Latino community"
+  },
+  {
+    "name": "Riverside",
+    "lat": 33.9533,
+    "lng": -117.3962,
+    "tags": ["city", "major-city", "inland-empire"],
+    "interest": "Birthplace of California's citrus industry; home to the historic Mission Inn"
+  },
+  {
+    "name": "Stockton",
+    "lat": 37.9577,
+    "lng": -121.2908,
+    "tags": ["city", "major-city", "central-valley"],
+    "interest": "Inland port city connected to SF Bay via deep-water channel; faced historic bankruptcy in 2012"
+  },
+  {
+    "name": "Irvine",
+    "lat": 33.6846,
+    "lng": -117.8265,
+    "tags": ["city", "major-city", "southern-california", "orange-county"],
+    "interest": "Master-planned city consistently ranked among America's safest; major tech and biomedical corridor"
+  },
+  {
+    "name": "Chula Vista",
+    "lat": 32.6401,
+    "lng": -117.0842,
+    "tags": ["city", "major-city", "southern-california"],
+    "interest": "Second-largest city in the San Diego metro; US Olympic Training Center location"
+  },
+  {
+    "name": "Fremont",
+    "lat": 37.5485,
+    "lng": -121.9886,
+    "tags": ["city", "major-city", "bay-area"],
+    "interest": "Home to Tesla's primary manufacturing plant and historic Niles Canyon railway"
+  },
+  {
+    "name": "San Bernardino",
+    "lat": 34.1083,
+    "lng": -117.2898,
+    "tags": ["city", "major-city", "inland-empire"],
+    "interest": "Gateway to the San Bernardino Mountains; site of the first McDonald's restaurant"
+  },
+  {
+    "name": "Modesto",
+    "lat": 37.6391,
+    "lng": -120.9969,
+    "tags": ["city", "major-city", "central-valley"],
+    "interest": "Inspired the film American Graffiti; major food-processing center in the San Joaquin Valley"
+  },
+  {
+    "name": "Fontana",
+    "lat": 34.0922,
+    "lng": -117.4350,
+    "tags": ["city", "major-city", "inland-empire"],
+    "interest": "Home to Auto Club Speedway; former Kaiser Steel mill site now redeveloped"
+  },
+  {
+    "name": "Moreno Valley",
+    "lat": 33.9425,
+    "lng": -117.2297,
+    "tags": ["city", "major-city", "inland-empire"],
+    "interest": "One of California's fastest-growing cities; massive warehouse and logistics hub"
+  },
+  {
+    "name": "Glendale",
+    "lat": 34.1425,
+    "lng": -118.2551,
+    "tags": ["city", "major-city", "southern-california"],
+    "interest": "Largest Armenian diaspora community in the US; home to DreamWorks Animation studios"
+  },
+  {
+    "name": "Huntington Beach",
+    "lat": 33.6595,
+    "lng": -117.9988,
+    "tags": ["city", "major-city", "southern-california", "coastal", "orange-county"],
+    "interest": "Surf City USA with 9.5 miles of uninterrupted beach; hosts the US Open of Surfing"
+  },
+  {
+    "name": "Santa Clarita",
+    "lat": 34.3917,
+    "lng": -118.5426,
+    "tags": ["city", "major-city", "southern-california"],
+    "interest": "Third-largest city in LA County; major film and TV production location"
+  },
+  {
+    "name": "Garden Grove",
+    "lat": 33.7743,
+    "lng": -117.9379,
+    "tags": ["city", "major-city", "southern-california", "orange-county"],
+    "interest": "Home to a thriving Vietnamese American community and the Crystal Cathedral"
+  },
+  {
+    "name": "Oceanside",
+    "lat": 33.1959,
+    "lng": -117.3795,
+    "tags": ["city", "major-city", "southern-california", "coastal"],
+    "interest": "Beach city adjacent to Camp Pendleton Marine base; historic wooden pier and surf culture"
+  },
+  {
+    "name": "Bakersfield",
+    "lat": 35.3733,
+    "lng": -119.0187,
+    "tags": ["city", "major-city", "central-valley", "oil-industry"],
+    "interest": "Heart of California's oil industry and birthplace of the Bakersfield Sound in country music"
+  },
+  {
+    "name": "Yosemite National Park",
+    "lat": 37.8651,
+    "lng": -119.5383,
+    "tags": ["park", "national-park", "sierra-nevada"],
+    "interest": "Iconic granite cliffs, waterfalls, and giant sequoias; UNESCO World Heritage Site since 1984"
+  },
+  {
+    "name": "Joshua Tree National Park",
+    "lat": 33.8734,
+    "lng": -115.9010,
+    "tags": ["park", "national-park", "desert", "southern-california"],
+    "interest": "Where the Mojave and Colorado deserts meet; famous for unique Joshua trees and rock formations"
+  },
+  {
+    "name": "Death Valley National Park",
+    "lat": 36.5323,
+    "lng": -116.9325,
+    "tags": ["park", "national-park", "desert"],
+    "interest": "Hottest place on Earth (134F record); lowest point in North America at Badwater Basin (-282 ft)"
+  },
+  {
+    "name": "Redwood National Park",
+    "lat": 41.2132,
+    "lng": -124.0046,
+    "tags": ["park", "national-park", "northern-california", "redwoods"],
+    "interest": "Home to the tallest trees on Earth; old-growth coastal redwood forests along the Pacific"
+  },
+  {
+    "name": "Point Reyes National Seashore",
+    "lat": 38.0682,
+    "lng": -122.8808,
+    "tags": ["park", "national-park", "bay-area", "coastal"],
+    "interest": "Dramatic coastal headlands on its own tectonic plate; rich wildlife including tule elk"
+  },
+  {
+    "name": "Big Sur",
+    "lat": 36.2704,
+    "lng": -121.8081,
+    "tags": ["park", "state-park", "coastal", "central-coast"],
+    "interest": "90 miles of rugged coastline along Highway 1; one of the most scenic drives in the world"
+  },
+  {
+    "name": "Sequoia National Park",
+    "lat": 36.4864,
+    "lng": -118.5658,
+    "tags": ["park", "national-park", "sierra-nevada"],
+    "interest": "Home to General Sherman, the largest tree by volume on Earth; established 1890"
+  },
+  {
+    "name": "Kings Canyon National Park",
+    "lat": 36.8879,
+    "lng": -118.5551,
+    "tags": ["park", "national-park", "sierra-nevada"],
+    "interest": "Contains one of the deepest canyons in North America; adjacent to Sequoia NP"
+  },
+  {
+    "name": "Channel Islands National Park",
+    "lat": 34.0069,
+    "lng": -119.7785,
+    "tags": ["park", "national-park", "southern-california", "coastal", "islands"],
+    "interest": "Five remote islands called the Galapagos of North America; 150+ endemic species"
+  },
+  {
+    "name": "Lassen Volcanic National Park",
+    "lat": 40.4977,
+    "lng": -121.5080,
+    "tags": ["park", "national-park", "northern-california", "volcanic"],
+    "interest": "All four types of volcanoes found here; Lassen Peak last erupted 1914-1917"
+  },
+  {
+    "name": "Pinnacles National Park",
+    "lat": 36.4906,
+    "lng": -121.1825,
+    "tags": ["park", "national-park", "central-coast"],
+    "interest": "Remnants of an ancient volcano split by the San Andreas Fault; California condor release site"
+  },
+  {
+    "name": "Anza-Borrego Desert State Park",
+    "lat": 33.2558,
+    "lng": -116.4017,
+    "tags": ["park", "state-park", "desert", "southern-california"],
+    "interest": "Largest state park in California; spectacular spring wildflower blooms in wet years"
+  },
+  {
+    "name": "Mt Tamalpais State Park",
+    "lat": 37.9235,
+    "lng": -122.5965,
+    "tags": ["park", "state-park", "bay-area", "marin"],
+    "interest": "Birthplace of mountain biking; sweeping views of the Bay Area and Pacific Ocean"
+  },
+  {
+    "name": "Muir Woods National Monument",
+    "lat": 37.8970,
+    "lng": -122.5811,
+    "tags": ["park", "national-monument", "bay-area", "redwoods"],
+    "interest": "Old-growth coastal redwoods just 12 miles north of San Francisco; named for John Muir"
+  },
+  {
+    "name": "Humboldt Redwoods State Park",
+    "lat": 40.3432,
+    "lng": -123.9556,
+    "tags": ["park", "state-park", "northern-california", "redwoods"],
+    "interest": "Avenue of the Giants; contains the largest remaining contiguous old-growth redwood forest"
+  },
+  {
+    "name": "Julia Pfeiffer Burns State Park",
+    "lat": 36.1580,
+    "lng": -121.6719,
+    "tags": ["park", "state-park", "coastal", "big-sur"],
+    "interest": "Home to McWay Falls, an 80-foot waterfall dropping directly onto a beach cove"
+  },
+  {
+    "name": "McArthur-Burney Falls Memorial State Park",
+    "lat": 41.0126,
+    "lng": -121.6511,
+    "tags": ["park", "state-park", "northern-california"],
+    "interest": "129-foot waterfall Teddy Roosevelt called the eighth wonder of the world"
+  },
+  {
+    "name": "Calaveras Big Trees State Park",
+    "lat": 38.2791,
+    "lng": -120.3013,
+    "tags": ["park", "state-park", "sierra-nevada", "sequoias"],
+    "interest": "First giant sequoia grove discovered by Euro-Americans in 1852; two magnificent groves"
+  },
+  {
+    "name": "Henry Cowell Redwoods State Park",
+    "lat": 37.0416,
+    "lng": -122.0636,
+    "tags": ["park", "state-park", "santa-cruz", "redwoods"],
+    "interest": "40-acre old-growth redwood grove near Santa Cruz; popular Roaring Camp Railway"
+  },
+  {
+    "name": "Prairie Creek Redwoods State Park",
+    "lat": 41.3678,
+    "lng": -124.0277,
+    "tags": ["park", "state-park", "northern-california", "redwoods"],
+    "interest": "Fern Canyon with 50-foot walls of ferns; Roosevelt elk herds roam the meadows"
+  },
+  {
+    "name": "Torrey Pines State Natural Reserve",
+    "lat": 32.9201,
+    "lng": -117.2516,
+    "tags": ["park", "state-park", "southern-california", "coastal"],
+    "interest": "Rarest pine tree in the US grows on eroded sandstone bluffs above the Pacific"
+  },
+  {
+    "name": "Crystal Cove State Park",
+    "lat": 33.5722,
+    "lng": -117.8360,
+    "tags": ["park", "state-park", "southern-california", "coastal", "orange-county"],
+    "interest": "3.2 miles of pristine beach between Laguna Beach and Newport; historic beach cottages"
+  },
+  {
+    "name": "Montana de Oro State Park",
+    "lat": 35.2721,
+    "lng": -120.8849,
+    "tags": ["park", "state-park", "central-coast"],
+    "interest": "Mountain of Gold named for golden wildflowers; dramatic bluffs and tide pools near Morro Bay"
+  },
+  {
+    "name": "Pfeiffer Big Sur State Park",
+    "lat": 36.2469,
+    "lng": -121.7836,
+    "tags": ["park", "state-park", "big-sur", "coastal"],
+    "interest": "Heart of Big Sur with redwood groves along the Big Sur River; gateway to Pfeiffer Falls"
+  },
+  {
+    "name": "Andrew Molera State Park",
+    "lat": 36.2863,
+    "lng": -121.8460,
+    "tags": ["park", "state-park", "big-sur", "coastal"],
+    "interest": "Largest state park on the Big Sur coast; seasonal footbridge and pristine beach access"
+  },
+  {
+    "name": "Stringfellow Acid Pits",
+    "lat": 33.9878,
+    "lng": -117.4623,
+    "tags": ["superfund", "contaminated", "environmental-justice", "inland-empire"],
+    "interest": "One of California's worst hazardous waste sites; 34M gallons of industrial chemicals dumped 1956-1972"
+  },
+  {
+    "name": "Santa Susana Field Laboratory",
+    "lat": 34.2314,
+    "lng": -118.7097,
+    "tags": ["superfund", "contaminated", "nuclear", "southern-california"],
+    "interest": "Former rocket engine test and nuclear reactor site; partial meltdown in 1959; ongoing cleanup disputes"
+  },
+  {
+    "name": "Hunters Point Naval Shipyard",
+    "lat": 37.7296,
+    "lng": -122.3739,
+    "tags": ["superfund", "contaminated", "environmental-justice", "bay-area"],
+    "interest": "Former Navy shipyard with radiological contamination; environmental justice flashpoint amid redevelopment"
+  },
+  {
+    "name": "Treasure Island",
+    "lat": 37.8235,
+    "lng": -122.3708,
+    "tags": ["superfund", "contaminated", "bay-area"],
+    "interest": "Artificial island built for 1939 World's Fair; Navy radiological contamination being cleaned for housing"
+  },
+  {
+    "name": "McColl Superfund Site",
+    "lat": 33.8803,
+    "lng": -117.9400,
+    "tags": ["superfund", "contaminated", "southern-california", "orange-county"],
+    "interest": "WWII-era petroleum waste sumps in Fullerton; acid sludge disposal caused decades of health complaints"
+  },
+  {
+    "name": "Operating Industries Landfill",
+    "lat": 34.0395,
+    "lng": -118.1282,
+    "tags": ["superfund", "contaminated", "environmental-justice", "southern-california"],
+    "interest": "Monterey Park mega-landfill accepted hazardous waste illegally; one of the largest Superfund sites in CA"
+  },
+  {
+    "name": "Aerojet Superfund Site",
+    "lat": 38.5891,
+    "lng": -121.2548,
+    "tags": ["superfund", "contaminated", "sacramento"],
+    "interest": "Rocket propellant manufacturing in Rancho Cordova contaminated 30 sq mi of groundwater with perchlorate and TCE"
+  },
+  {
+    "name": "Iron Mountain Mine",
+    "lat": 40.6724,
+    "lng": -122.5262,
+    "tags": ["superfund", "contaminated", "mining", "northern-california"],
+    "interest": "Most toxic water ever measured (pH -3.6); acid mine drainage threatens Sacramento River watershed"
+  },
+  {
+    "name": "San Fernando Valley Superfund",
+    "lat": 34.1977,
+    "lng": -118.2674,
+    "tags": ["superfund", "contaminated", "southern-california"],
+    "interest": "Massive TCE and PCE groundwater plume affecting drinking water for millions in the LA basin"
+  },
+  {
+    "name": "Casmalia Resources Hazardous Waste Site",
+    "lat": 34.8458,
+    "lng": -120.5276,
+    "tags": ["superfund", "contaminated", "central-coast"],
+    "interest": "Former hazardous waste disposal facility near Santa Maria; accepted waste from across California"
+  },
+  {
+    "name": "Lawrence Livermore National Laboratory",
+    "lat": 37.6874,
+    "lng": -121.7058,
+    "tags": ["superfund", "contaminated", "nuclear", "bay-area"],
+    "interest": "Nuclear weapons research lab with groundwater VOC plumes; dual Superfund sites (main + Site 300)"
+  },
+  {
+    "name": "Camp Pendleton Marine Base",
+    "lat": 33.3047,
+    "lng": -117.3541,
+    "tags": ["superfund", "contaminated", "military", "southern-california"],
+    "interest": "125,000-acre Marine base with multiple contaminated areas from munitions, fuels, and industrial solvents"
+  },
+  {
+    "name": "Montrose Chemical Superfund",
+    "lat": 33.8145,
+    "lng": -118.3155,
+    "tags": ["superfund", "contaminated", "southern-california"],
+    "interest": "Largest DDT manufacturer in US history; massive seafloor contamination off Palos Verdes shelf in Torrance"
+  },
+  {
+    "name": "Edwards Air Force Base",
+    "lat": 34.9054,
+    "lng": -117.8839,
+    "tags": ["superfund", "contaminated", "military", "desert"],
+    "interest": "Historic flight test center with TCE groundwater contamination beneath the Mojave Desert dry lakebed"
+  },
+  {
+    "name": "Selma Treating Superfund Site",
+    "lat": 36.5716,
+    "lng": -119.6121,
+    "tags": ["superfund", "contaminated", "central-valley"],
+    "interest": "Wood treating facility in Selma contaminated soil and groundwater with creosote and PCP"
+  },
+  {
+    "name": "Pemaco Superfund Site",
+    "lat": 33.9870,
+    "lng": -118.1863,
+    "tags": ["superfund", "contaminated", "environmental-justice", "southern-california"],
+    "interest": "Chemical distribution facility in Maywood; VOC contamination in densely populated Latino neighborhood"
+  },
+  {
+    "name": "Koppers Co Superfund Site",
+    "lat": 39.5147,
+    "lng": -121.5569,
+    "tags": ["superfund", "contaminated", "northern-california"],
+    "interest": "Former wood treating plant in Oroville; creosote and PCP contamination of soil and groundwater"
+  },
+  {
+    "name": "Sacramento Army Depot",
+    "lat": 38.5493,
+    "lng": -121.4018,
+    "tags": ["superfund", "contaminated", "military", "sacramento"],
+    "interest": "Former military logistics depot with TCE groundwater plume; now being redeveloped as industrial park"
+  },
+  {
+    "name": "Mather Air Force Base",
+    "lat": 38.5567,
+    "lng": -121.2978,
+    "tags": ["superfund", "contaminated", "military", "sacramento"],
+    "interest": "Closed SAC bomber base with extensive TCE and fuel contamination; converted to civilian airport"
+  },
+  {
+    "name": "Concord Naval Weapons Station",
+    "lat": 38.0066,
+    "lng": -122.0000,
+    "tags": ["superfund", "contaminated", "military", "bay-area"],
+    "interest": "5,000-acre former weapons depot; site of 1944 Port Chicago disaster; massive redevelopment planned"
+  },
+  {
+    "name": "Richmond",
+    "lat": 37.9358,
+    "lng": -122.3478,
+    "tags": ["industrial", "refinery", "environmental-justice", "bay-area"],
+    "interest": "Chevron refinery town; 2012 refinery fire sent 15,000 to hospitals; major EJ community activism"
+  },
+  {
+    "name": "Wilmington",
+    "lat": 33.7838,
+    "lng": -118.2636,
+    "tags": ["industrial", "refinery", "environmental-justice", "southern-california", "port"],
+    "interest": "Surrounded by five oil refineries and the Port of LA; one of the most polluted neighborhoods in CA"
+  },
+  {
+    "name": "Carson",
+    "lat": 33.8317,
+    "lng": -118.2820,
+    "tags": ["industrial", "refinery", "southern-california"],
+    "interest": "Home to multiple refineries and the former Cal Compact Landfill; persistent odor complaints"
+  },
+  {
+    "name": "Torrance",
+    "lat": 33.8358,
+    "lng": -118.3406,
+    "tags": ["industrial", "refinery", "southern-california"],
+    "interest": "Site of 2015 ExxonMobil refinery explosion that nearly caused catastrophic release of modified HF acid"
+  },
+  {
+    "name": "Martinez",
+    "lat": 38.0194,
+    "lng": -122.1341,
+    "tags": ["industrial", "refinery", "bay-area"],
+    "interest": "Marathon refinery town on the Carquinez Strait; birthplace of Joe DiMaggio and the martini cocktail"
+  },
+  {
+    "name": "El Segundo",
+    "lat": 33.9192,
+    "lng": -118.4165,
+    "tags": ["industrial", "refinery", "southern-california"],
+    "interest": "Named for Chevron's second Standard Oil refinery; largest refinery on the West Coast"
+  },
+  {
+    "name": "Rodeo",
+    "lat": 38.0321,
+    "lng": -122.2594,
+    "tags": ["industrial", "refinery", "bay-area"],
+    "interest": "Phillips 66 refinery community on San Pablo Bay being converted to world's largest renewable fuels plant"
+  },
+  {
+    "name": "Pittsburg",
+    "lat": 38.0280,
+    "lng": -121.8847,
+    "tags": ["industrial", "bay-area"],
+    "interest": "Former steel and chemical manufacturing hub on the Sacramento-San Joaquin Delta"
+  },
+  {
+    "name": "Antioch",
+    "lat": 38.0049,
+    "lng": -121.8058,
+    "tags": ["industrial", "bay-area"],
+    "interest": "Eastern Contra Costa industrial zone; historically paper mills and chemical plants along the Delta"
+  },
+  {
+    "name": "Crockett",
+    "lat": 38.0527,
+    "lng": -122.2136,
+    "tags": ["industrial", "bay-area"],
+    "interest": "Tiny Carquinez Strait town dominated by the C&H Sugar refinery operating since 1906"
+  },
+  {
+    "name": "Benicia",
+    "lat": 38.0494,
+    "lng": -122.1586,
+    "tags": ["industrial", "refinery", "bay-area"],
+    "interest": "Valero refinery town and former state capital; key crude-by-rail terminus on the Carquinez Strait"
+  },
+  {
+    "name": "Signal Hill",
+    "lat": 33.8042,
+    "lng": -118.1678,
+    "tags": ["industrial", "oil-industry", "southern-california"],
+    "interest": "Tiny city surrounded by Long Beach; 1921 oil gusher made it one of the most productive oil fields ever"
+  },
+  {
+    "name": "Vernon",
+    "lat": 34.0034,
+    "lng": -118.2301,
+    "tags": ["industrial", "environmental-justice", "southern-california"],
+    "interest": "Exclusively industrial city of ~200 residents surrounded by 1,800+ businesses; severe pollution concerns"
+  },
+  {
+    "name": "Commerce",
+    "lat": 34.0001,
+    "lng": -118.1598,
+    "tags": ["industrial", "southern-california"],
+    "interest": "Industrial city in southeast LA known for the Citadel Outlets and heavy manufacturing concentration"
+  },
+  {
+    "name": "South Gate",
+    "lat": 33.9547,
+    "lng": -118.2120,
+    "tags": ["industrial", "environmental-justice", "southern-california"],
+    "interest": "Former GM assembly plant city in the industrial corridor of southeast Los Angeles"
+  },
+  {
+    "name": "Kettleman City",
+    "lat": 36.0085,
+    "lng": -119.9624,
+    "tags": ["ej-community", "environmental-justice", "central-valley"],
+    "interest": "Tiny farmworker community near CA's largest toxic waste dump; birth defect cluster investigations"
+  },
+  {
+    "name": "Mecca",
+    "lat": 33.5681,
+    "lng": -116.0717,
+    "tags": ["ej-community", "environmental-justice", "desert", "coachella-valley"],
+    "interest": "Impoverished farmworker community near the Salton Sea exposed to toxic dust and pesticides"
+  },
+  {
+    "name": "Pixley",
+    "lat": 35.9696,
+    "lng": -119.2919,
+    "tags": ["ej-community", "environmental-justice", "central-valley"],
+    "interest": "Small Tulare County community with contaminated drinking water from nitrates and pesticides"
+  },
+  {
+    "name": "West Oakland",
+    "lat": 37.8120,
+    "lng": -122.2913,
+    "tags": ["ej-community", "environmental-justice", "bay-area"],
+    "interest": "Diesel particulate hotspot surrounded by port, freeways, and rail; historic Black community"
+  },
+  {
+    "name": "Boyle Heights",
+    "lat": 34.0339,
+    "lng": -118.2106,
+    "tags": ["ej-community", "environmental-justice", "southern-california"],
+    "interest": "Historic East LA neighborhood surrounded by freeways; lead contamination from Exide battery recycler"
+  },
+  {
+    "name": "Bayview-Hunters Point",
+    "lat": 37.7341,
+    "lng": -122.3815,
+    "tags": ["ej-community", "environmental-justice", "bay-area"],
+    "interest": "SF's last major Black neighborhood adjacent to the contaminated naval shipyard; severe health disparities"
+  },
+  {
+    "name": "East Los Angeles",
+    "lat": 34.0239,
+    "lng": -118.1726,
+    "tags": ["ej-community", "environmental-justice", "southern-california"],
+    "interest": "Unincorporated Latino community with disproportionate pollution from industrial and transportation sources"
+  },
+  {
+    "name": "Coachella",
+    "lat": 33.6803,
+    "lng": -116.1739,
+    "tags": ["ej-community", "environmental-justice", "desert", "coachella-valley"],
+    "interest": "Farmworker community facing pesticide exposure and Salton Sea air quality issues; also famous for music festival"
+  },
+  {
+    "name": "Arvin",
+    "lat": 35.2092,
+    "lng": -118.8284,
+    "tags": ["ej-community", "environmental-justice", "central-valley"],
+    "interest": "Southern San Joaquin Valley town with some of the worst air quality in the US from agriculture and oil"
+  },
+  {
+    "name": "Lamont",
+    "lat": 35.2600,
+    "lng": -118.9151,
+    "tags": ["ej-community", "environmental-justice", "central-valley"],
+    "interest": "Unincorporated farmworker community near Bakersfield with pesticide exposure and contaminated water"
+  },
+  {
+    "name": "Parlier",
+    "lat": 36.6118,
+    "lng": -119.5269,
+    "tags": ["ej-community", "environmental-justice", "central-valley"],
+    "interest": "Small Fresno County farmworker town with nitrate-contaminated drinking water"
+  },
+  {
+    "name": "Shafter",
+    "lat": 35.5005,
+    "lng": -119.2718,
+    "tags": ["ej-community", "environmental-justice", "central-valley"],
+    "interest": "Agricultural community near Bakersfield facing pesticide drift and contaminated groundwater"
+  },
+  {
+    "name": "Wasco",
+    "lat": 35.5938,
+    "lng": -119.3407,
+    "tags": ["ej-community", "environmental-justice", "central-valley"],
+    "interest": "Rose-growing capital of the US; farmworker community with environmental health concerns"
+  },
+  {
+    "name": "Calipatria",
+    "lat": 33.1253,
+    "lng": -115.5141,
+    "tags": ["ej-community", "environmental-justice", "imperial-valley"],
+    "interest": "Imperial Valley town near the Salton Sea; claims the world's tallest flagpole at 184 feet below sea level"
+  },
+  {
+    "name": "Westmorland",
+    "lat": 33.0377,
+    "lng": -115.6214,
+    "tags": ["ej-community", "environmental-justice", "imperial-valley"],
+    "interest": "Small Imperial Valley community facing Salton Sea dust exposure and agricultural pollution"
+  },
+  {
+    "name": "Huron",
+    "lat": 36.2027,
+    "lng": -120.1021,
+    "tags": ["ej-community", "environmental-justice", "central-valley"],
+    "interest": "One of the poorest cities in CA; farmworker community with severe water contamination issues"
+  },
+  {
+    "name": "Avenal",
+    "lat": 36.0038,
+    "lng": -120.1268,
+    "tags": ["ej-community", "environmental-justice", "central-valley"],
+    "interest": "Central Valley prison town near Kettleman City; disproportionate pollution burden on low-income residents"
+  },
+  {
+    "name": "McFarland",
+    "lat": 35.6821,
+    "lng": -119.2290,
+    "tags": ["ej-community", "environmental-justice", "central-valley"],
+    "interest": "Subject of the film McFarland, USA; cancer cluster investigation due to pesticide exposure"
+  },
+  {
+    "name": "Delano",
+    "lat": 35.7688,
+    "lng": -119.2470,
+    "tags": ["ej-community", "environmental-justice", "central-valley"],
+    "interest": "Birthplace of the 1965 Grape Strike and UFW movement led by Cesar Chavez and Larry Itliong"
+  },
+  {
+    "name": "Guadalupe",
+    "lat": 34.9716,
+    "lng": -120.5718,
+    "tags": ["ej-community", "environmental-justice", "central-coast"],
+    "interest": "Small farmworker town near Santa Maria; Guadalupe-Nipomo Dunes complex and buried Cecil B. DeMille set"
+  },
+  {
+    "name": "UC Berkeley",
+    "lat": 37.8719,
+    "lng": -122.2585,
+    "tags": ["university", "uc-system", "bay-area"],
+    "interest": "Flagship UC campus and top public university; birthplace of the Free Speech Movement"
+  },
+  {
+    "name": "Stanford University",
+    "lat": 37.4275,
+    "lng": -122.1697,
+    "tags": ["university", "private", "bay-area", "silicon-valley"],
+    "interest": "Elite research university that seeded Silicon Valley; 8,180-acre campus with Hoover Tower"
+  },
+  {
+    "name": "UCLA",
+    "lat": 34.0689,
+    "lng": -118.4452,
+    "tags": ["university", "uc-system", "southern-california"],
+    "interest": "Most applied-to university in the US; powerhouse athletics and film school in Westwood"
+  },
+  {
+    "name": "UC San Diego",
+    "lat": 32.8801,
+    "lng": -117.2340,
+    "tags": ["university", "uc-system", "southern-california"],
+    "interest": "Leading research university in La Jolla; Scripps Institution of Oceanography and biotech corridor"
+  },
+  {
+    "name": "Cal Poly San Luis Obispo",
+    "lat": 35.3005,
+    "lng": -120.6625,
+    "tags": ["university", "csu-system", "central-coast"],
+    "interest": "Learn by doing polytechnic on the Central Coast; top-ranked CSU with strong engineering and agriculture"
+  },
+  {
+    "name": "UC Davis",
+    "lat": 38.5382,
+    "lng": -121.7617,
+    "tags": ["university", "uc-system", "sacramento"],
+    "interest": "Premier agricultural and veterinary research university; most bike-friendly campus in the US"
+  },
+  {
+    "name": "UC Santa Barbara",
+    "lat": 34.4140,
+    "lng": -119.8489,
+    "tags": ["university", "uc-system", "southern-california", "coastal"],
+    "interest": "Beachfront campus on a Pacific bluff; Nobel Prize-winning physics department"
+  },
+  {
+    "name": "UC Irvine",
+    "lat": 33.6405,
+    "lng": -117.8443,
+    "tags": ["university", "uc-system", "southern-california", "orange-county"],
+    "interest": "Master-planned campus with circular design; strong computer science and medical programs"
+  },
+  {
+    "name": "UC Santa Cruz",
+    "lat": 36.9914,
+    "lng": -122.0609,
+    "tags": ["university", "uc-system", "coastal", "santa-cruz"],
+    "interest": "Redwood forest campus overlooking Monterey Bay; Banana Slug mascot; genomics research leader"
+  },
+  {
+    "name": "San Francisco State University",
+    "lat": 37.7219,
+    "lng": -122.4782,
+    "tags": ["university", "csu-system", "bay-area"],
+    "interest": "Birthplace of ethnic studies programs after the 1968 student strike; diverse urban campus"
+  },
+  {
+    "name": "San Jose State University",
+    "lat": 37.3352,
+    "lng": -121.8811,
+    "tags": ["university", "csu-system", "bay-area", "silicon-valley"],
+    "interest": "Oldest public university on the West Coast (1857); major Silicon Valley talent pipeline"
+  },
+  {
+    "name": "CSU Long Beach",
+    "lat": 33.7838,
+    "lng": -118.1141,
+    "tags": ["university", "csu-system", "southern-california"],
+    "interest": "Largest CSU campus by enrollment; Walter Pyramid landmark; strong engineering programs"
+  },
+  {
+    "name": "Caltech",
+    "lat": 34.1377,
+    "lng": -118.1253,
+    "tags": ["university", "private", "southern-california"],
+    "interest": "Elite STEM institution in Pasadena managing JPL; 40 Nobel laureates affiliated"
+  },
+  {
+    "name": "USC",
+    "lat": 34.0224,
+    "lng": -118.2851,
+    "tags": ["university", "private", "southern-california"],
+    "interest": "Private research university in downtown LA; top film school and Trojan athletics legacy"
+  },
+  {
+    "name": "Cal Poly Pomona",
+    "lat": 34.0565,
+    "lng": -117.8215,
+    "tags": ["university", "csu-system", "southern-california"],
+    "interest": "Polytechnic campus with working farm and Arabian horse program on former Kellogg Ranch"
+  },
+  {
+    "name": "Golden Gate Bridge",
+    "lat": 37.8199,
+    "lng": -122.4783,
+    "tags": ["landmark", "bay-area", "iconic"],
+    "interest": "Iconic 1937 Art Deco suspension bridge spanning 4,200 feet across the Golden Gate strait"
+  },
+  {
+    "name": "Hollywood Sign",
+    "lat": 34.1341,
+    "lng": -118.3215,
+    "tags": ["landmark", "southern-california", "iconic"],
+    "interest": "45-foot-tall letters on Mt Lee originally erected in 1923 as a real estate advertisement"
+  },
+  {
+    "name": "Santa Monica Pier",
+    "lat": 34.0096,
+    "lng": -118.4976,
+    "tags": ["landmark", "beach", "southern-california"],
+    "interest": "Western terminus of Route 66; iconic Pacific Park Ferris wheel and solar-powered amusement rides"
+  },
+  {
+    "name": "Venice Beach",
+    "lat": 33.9850,
+    "lng": -118.4695,
+    "tags": ["landmark", "beach", "southern-california"],
+    "interest": "Birthplace of West Coast counterculture; Muscle Beach, skate park, and the Venice Boardwalk"
+  },
+  {
+    "name": "Surfrider Beach (Malibu)",
+    "lat": 34.0352,
+    "lng": -118.6831,
+    "tags": ["landmark", "beach", "southern-california", "coastal"],
+    "interest": "World-famous surf break at Malibu Point; birthplace of modern California surf culture"
+  },
+  {
+    "name": "Huntington Beach Pier",
+    "lat": 33.6553,
+    "lng": -117.9992,
+    "tags": ["landmark", "beach", "southern-california", "coastal"],
+    "interest": "1,850-foot concrete pier hosting the annual US Open of Surfing since 1959"
+  },
+  {
+    "name": "La Jolla Cove",
+    "lat": 32.8508,
+    "lng": -117.2726,
+    "tags": ["landmark", "beach", "southern-california", "coastal"],
+    "interest": "Pristine marine reserve with sea caves, sea lions, and crystal-clear snorkeling waters"
+  },
+  {
+    "name": "Coronado Beach",
+    "lat": 32.6818,
+    "lng": -117.1839,
+    "tags": ["landmark", "beach", "southern-california", "coastal"],
+    "interest": "Consistently ranked top US beach; Hotel del Coronado is a National Historic Landmark since 1888"
+  },
+  {
+    "name": "Stinson Beach",
+    "lat": 37.9004,
+    "lng": -122.6459,
+    "tags": ["landmark", "beach", "bay-area", "marin"],
+    "interest": "Marin County beach town with 3.5 miles of white sand at the foot of Mt Tamalpais"
+  },
+  {
+    "name": "Glass Beach (Fort Bragg)",
+    "lat": 39.4520,
+    "lng": -123.8148,
+    "tags": ["landmark", "beach", "northern-california", "coastal"],
+    "interest": "Former dump site where decades of wave action polished discarded glass into smooth colorful pebbles"
+  },
+  {
+    "name": "Pfeiffer Beach",
+    "lat": 36.2380,
+    "lng": -121.8158,
+    "tags": ["landmark", "beach", "big-sur", "coastal"],
+    "interest": "Purple-hued sand and Keyhole Arch rock formation; one of Big Sur's most photographed spots"
+  },
+  {
+    "name": "Natural Bridges State Beach",
+    "lat": 36.9519,
+    "lng": -122.0576,
+    "tags": ["landmark", "beach", "santa-cruz", "coastal"],
+    "interest": "Natural sandstone bridge over the surf in Santa Cruz; monarch butterfly wintering site"
+  },
+  {
+    "name": "Pismo Beach",
+    "lat": 35.1428,
+    "lng": -120.6413,
+    "tags": ["landmark", "beach", "central-coast"],
+    "interest": "Classic California beach town; Oceano Dunes allow vehicles on the beach; famous clam chowder"
+  },
+  {
+    "name": "Balboa Pier",
+    "lat": 33.5999,
+    "lng": -117.8975,
+    "tags": ["landmark", "beach", "southern-california", "orange-county"],
+    "interest": "Historic 1906 pier on the Balboa Peninsula; Ruby's Diner at the end; fun zone and ferry to Balboa Island"
+  },
+  {
+    "name": "Manhattan Beach",
+    "lat": 33.8847,
+    "lng": -118.4109,
+    "tags": ["landmark", "beach", "southern-california"],
+    "interest": "Birthplace of beach volleyball; upscale beach community with a classic California pier"
+  },
+  {
+    "name": "Napa",
+    "lat": 38.2975,
+    "lng": -122.2869,
+    "tags": ["wine-country", "agriculture", "northern-california"],
+    "interest": "Heart of America's premier wine region; over 400 wineries producing world-class Cabernet Sauvignon"
+  },
+  {
+    "name": "Sonoma",
+    "lat": 38.2920,
+    "lng": -122.4580,
+    "tags": ["wine-country", "agriculture", "northern-california"],
+    "interest": "Where California's wine industry began and the Bear Flag Revolt declared the California Republic"
+  },
+  {
+    "name": "Paso Robles",
+    "lat": 35.6264,
+    "lng": -120.6910,
+    "tags": ["wine-country", "agriculture", "central-coast"],
+    "interest": "Fast-growing wine region with 200+ wineries; known for bold Zinfandel and Rhone-style blends"
+  },
+  {
+    "name": "Salinas",
+    "lat": 36.6777,
+    "lng": -121.6555,
+    "tags": ["agriculture", "central-coast"],
+    "interest": "Salad Bowl of the World producing most of America's lettuce; John Steinbeck's hometown"
+  },
+  {
+    "name": "Lodi",
+    "lat": 38.1302,
+    "lng": -121.2724,
+    "tags": ["wine-country", "agriculture", "central-valley"],
+    "interest": "Home to some of the oldest Zinfandel vines in California; 85+ wineries in the appellation"
+  },
+  {
+    "name": "Temecula",
+    "lat": 33.4936,
+    "lng": -117.1484,
+    "tags": ["wine-country", "southern-california"],
+    "interest": "Southern California's premier wine region with 40+ wineries in the Temecula Valley AVA"
+  },
+  {
+    "name": "Livermore",
+    "lat": 37.6819,
+    "lng": -121.7680,
+    "tags": ["wine-country", "bay-area"],
+    "interest": "One of California's oldest wine regions; also home to two national laboratories"
+  },
+  {
+    "name": "Santa Ynez",
+    "lat": 34.6128,
+    "lng": -119.7698,
+    "tags": ["wine-country", "agriculture", "central-coast"],
+    "interest": "Picturesque Santa Ynez Valley wine country; featured in the film Sideways"
+  },
+  {
+    "name": "Boonville (Anderson Valley)",
+    "lat": 38.9910,
+    "lng": -123.3638,
+    "tags": ["wine-country", "northern-california"],
+    "interest": "Remote Mendocino County valley known for Pinot Noir, Alsatian varieties, and its own folk language Boontling"
+  },
+  {
+    "name": "Healdsburg",
+    "lat": 38.6107,
+    "lng": -122.8690,
+    "tags": ["wine-country", "northern-california"],
+    "interest": "Upscale wine country town at the intersection of three premier AVAs: Alexander, Dry Creek, and Russian River Valley"
+  },
+  {
+    "name": "St Helena",
+    "lat": 38.5055,
+    "lng": -122.4703,
+    "tags": ["wine-country", "northern-california"],
+    "interest": "Heart of Napa Valley with the Culinary Institute of America at Greystone and iconic wineries"
+  },
+  {
+    "name": "Calistoga",
+    "lat": 38.5788,
+    "lng": -122.5797,
+    "tags": ["wine-country", "northern-california"],
+    "interest": "Hot springs and mud baths at the north end of Napa Valley; home to the Old Faithful geyser of California"
+  },
+  {
+    "name": "Los Olivos",
+    "lat": 34.6678,
+    "lng": -119.8912,
+    "tags": ["wine-country", "central-coast"],
+    "interest": "Charming tasting room village in Santa Barbara wine country with 30+ tasting rooms on one main street"
+  },
+  {
+    "name": "Gonzales",
+    "lat": 36.5064,
+    "lng": -121.4441,
+    "tags": ["agriculture", "central-coast"],
+    "interest": "Salinas Valley agricultural town processing lettuce, broccoli, and wine grapes"
+  },
+  {
+    "name": "King City",
+    "lat": 36.2127,
+    "lng": -121.1260,
+    "tags": ["agriculture", "central-coast"],
+    "interest": "Southern gateway to the Salinas Valley agricultural corridor; gateway to Pinnacles National Park"
+  },
+  {
+    "name": "Monterey",
+    "lat": 36.6002,
+    "lng": -121.8947,
+    "tags": ["coastal-town", "central-coast"],
+    "interest": "Former sardine capital immortalized by Steinbeck; world-class aquarium on Cannery Row"
+  },
+  {
+    "name": "Carmel-by-the-Sea",
+    "lat": 36.5554,
+    "lng": -121.9233,
+    "tags": ["coastal-town", "central-coast"],
+    "interest": "Storybook village with no street addresses; Clint Eastwood was once mayor; gateway to Point Lobos"
+  },
+  {
+    "name": "Santa Cruz",
+    "lat": 36.9741,
+    "lng": -122.0308,
+    "tags": ["coastal-town", "central-coast"],
+    "interest": "Eclectic surf city with the 1924 Giant Dipper roller coaster and redwood-forested UC campus"
+  },
+  {
+    "name": "Half Moon Bay",
+    "lat": 37.4636,
+    "lng": -122.4286,
+    "tags": ["coastal-town", "bay-area", "coastal"],
+    "interest": "Pumpkin capital of the world; Mavericks big wave surf break draws elite surfers"
+  },
+  {
+    "name": "Mendocino",
+    "lat": 39.3077,
+    "lng": -123.7995,
+    "tags": ["coastal-town", "northern-california"],
+    "interest": "Victorian village on dramatic headlands; stood in for Cabot Cove in Murder She Wrote"
+  },
+  {
+    "name": "Eureka",
+    "lat": 40.8021,
+    "lng": -124.1637,
+    "tags": ["coastal-town", "northern-california"],
+    "interest": "Largest city on the North Coast; ornate Old Town Victorian buildings and working waterfront"
+  },
+  {
+    "name": "Bodega Bay",
+    "lat": 38.3333,
+    "lng": -123.0481,
+    "tags": ["coastal-town", "northern-california", "sonoma"],
+    "interest": "Filming location of Hitchcock's The Birds; prime whale watching and Dungeness crab"
+  },
+  {
+    "name": "Cayucos",
+    "lat": 35.4422,
+    "lng": -120.8921,
+    "tags": ["coastal-town", "central-coast"],
+    "interest": "Laid-back surf town with an 1875 pier; known as the last real California beach town"
+  },
+  {
+    "name": "Morro Bay",
+    "lat": 35.3658,
+    "lng": -120.8499,
+    "tags": ["coastal-town", "central-coast"],
+    "interest": "Dominated by 576-foot volcanic Morro Rock; one of the Nine Sisters chain of volcanic peaks"
+  },
+  {
+    "name": "Cambria",
+    "lat": 35.5641,
+    "lng": -121.0808,
+    "tags": ["coastal-town", "central-coast"],
+    "interest": "Artists' colony near Hearst Castle with a Monterey pine forest and moonstone beach"
+  },
+  {
+    "name": "Aptos",
+    "lat": 36.9770,
+    "lng": -121.8990,
+    "tags": ["coastal-town", "santa-cruz"],
+    "interest": "Home to the concrete ship SS Palo Alto at Seacliff State Beach; redwood-shaded community"
+  },
+  {
+    "name": "Capitola",
+    "lat": 36.9752,
+    "lng": -121.9531,
+    "tags": ["coastal-town", "santa-cruz"],
+    "interest": "Oldest seaside resort town on the Pacific Coast; colorful Venetian-style beachfront buildings"
+  },
+  {
+    "name": "Pacific Grove",
+    "lat": 36.6177,
+    "lng": -121.9166,
+    "tags": ["coastal-town", "central-coast"],
+    "interest": "Butterfly Town USA where monarchs overwinter; beautiful rocky coastline and Victorian homes"
+  },
+  {
+    "name": "Sausalito",
+    "lat": 37.8591,
+    "lng": -122.4853,
+    "tags": ["coastal-town", "bay-area", "marin"],
+    "interest": "Charming waterfront town across the Golden Gate from SF; historic houseboat community"
+  },
+  {
+    "name": "Tiburon",
+    "lat": 37.8735,
+    "lng": -122.4567,
+    "tags": ["coastal-town", "bay-area", "marin"],
+    "interest": "Affluent Marin peninsula with panoramic SF skyline views and ferry access to Angel Island"
+  },
+  {
+    "name": "Beverly Hills",
+    "lat": 34.0736,
+    "lng": -118.4004,
+    "tags": ["contrasting-pair", "wealth", "southern-california"],
+    "interest": "Synonymous with luxury and celebrity; Rodeo Drive shopping district and palatial estates"
+  },
+  {
+    "name": "Compton",
+    "lat": 33.8958,
+    "lng": -118.2201,
+    "tags": ["contrasting-pair", "environmental-justice", "southern-california"],
+    "interest": "Birthplace of West Coast hip-hop; historically underserved community now experiencing revitalization"
+  },
+  {
+    "name": "Palo Alto",
+    "lat": 37.4419,
+    "lng": -122.1430,
+    "tags": ["contrasting-pair", "wealth", "silicon-valley", "bay-area"],
+    "interest": "Heart of Silicon Valley adjacent to Stanford; HP garage is the birthplace of the tech industry"
+  },
+  {
+    "name": "East Palo Alto",
+    "lat": 37.4688,
+    "lng": -122.1411,
+    "tags": ["contrasting-pair", "environmental-justice", "bay-area"],
+    "interest": "Once had the highest per-capita murder rate in the US; now facing severe gentrification pressure"
+  },
+  {
+    "name": "Atherton",
+    "lat": 37.4613,
+    "lng": -122.1978,
+    "tags": ["contrasting-pair", "wealth", "bay-area"],
+    "interest": "Most expensive zip code in America; average home price over $7 million on tree-lined estates"
+  },
+  {
+    "name": "East Oakland",
+    "lat": 37.7652,
+    "lng": -122.1824,
+    "tags": ["contrasting-pair", "environmental-justice", "bay-area"],
+    "interest": "Historically disinvested community with food deserts and pollution burden; strong community organizing"
+  },
+  {
+    "name": "Bel Air",
+    "lat": 34.0826,
+    "lng": -118.4407,
+    "tags": ["contrasting-pair", "wealth", "southern-california"],
+    "interest": "Ultra-exclusive LA enclave with mega-mansions; part of the Platinum Triangle with Beverly Hills and Holmby Hills"
+  },
+  {
+    "name": "South Central Los Angeles",
+    "lat": 33.9425,
+    "lng": -118.2551,
+    "tags": ["contrasting-pair", "environmental-justice", "southern-california"],
+    "interest": "Historic Black and Latino community; site of 1965 Watts and 1992 LA uprisings; ongoing environmental justice struggles"
+  },
+  {
+    "name": "San Marino",
+    "lat": 34.1215,
+    "lng": -118.1063,
+    "tags": ["contrasting-pair", "wealth", "southern-california"],
+    "interest": "Home to The Huntington Library and one of the wealthiest small cities in California"
+  },
+  {
+    "name": "Pomona",
+    "lat": 34.0551,
+    "lng": -117.7500,
+    "tags": ["contrasting-pair", "southern-california"],
+    "interest": "Historic Inland Empire city with LA County Fair and growing arts district amid economic challenges"
+  },
+  {
+    "name": "Hillsborough",
+    "lat": 37.5741,
+    "lng": -122.3794,
+    "tags": ["contrasting-pair", "wealth", "bay-area"],
+    "interest": "Exclusively residential town with no commercial districts; median home value over $5 million"
+  },
+  {
+    "name": "Daly City",
+    "lat": 37.6879,
+    "lng": -122.4702,
+    "tags": ["contrasting-pair", "bay-area"],
+    "interest": "Most densely populated city in San Mateo County; Malvina Reynolds' Little Boxes inspired by its tract homes"
+  },
+  {
+    "name": "Cupertino",
+    "lat": 37.3230,
+    "lng": -122.0322,
+    "tags": ["contrasting-pair", "silicon-valley", "bay-area"],
+    "interest": "Home to Apple Park spaceship campus; top-rated schools drive extremely high housing costs"
+  },
+  {
+    "name": "Palm Springs",
+    "lat": 33.8303,
+    "lng": -116.5453,
+    "tags": ["notable", "desert", "southern-california"],
+    "interest": "Mid-century modern architecture mecca; LGBTQ+ resort destination; aerial tramway to 8,500 ft"
+  },
+  {
+    "name": "Mount Shasta",
+    "lat": 41.3099,
+    "lng": -122.3106,
+    "tags": ["notable", "mountain", "northern-california"],
+    "interest": "14,179-foot stratovolcano sacred to Native peoples; spiritual and New Age pilgrimage destination"
+  },
+  {
+    "name": "Mammoth Lakes",
+    "lat": 37.6485,
+    "lng": -118.9721,
+    "tags": ["notable", "mountain", "sierra-nevada"],
+    "interest": "Premier California ski resort at 11,053 ft; Long Valley caldera indicates active volcanic system"
+  },
+  {
+    "name": "South Lake Tahoe",
+    "lat": 38.9399,
+    "lng": -119.9772,
+    "tags": ["notable", "mountain", "sierra-nevada", "lake"],
+    "interest": "Largest alpine lake in North America; legendary water clarity and year-round recreation"
+  },
+  {
+    "name": "Avalon (Catalina Island)",
+    "lat": 33.3428,
+    "lng": -118.3287,
+    "tags": ["notable", "island", "southern-california"],
+    "interest": "Only incorporated city on Santa Catalina Island; 1929 Casino building and crystal-clear diving waters"
+  },
+  {
+    "name": "Solvang",
+    "lat": 34.5958,
+    "lng": -120.1376,
+    "tags": ["notable", "central-coast"],
+    "interest": "Danish-themed village founded in 1911 by Danish immigrants; windmills and aebleskiver"
+  },
+  {
+    "name": "Ojai",
+    "lat": 34.4480,
+    "lng": -119.2429,
+    "tags": ["notable", "southern-california"],
+    "interest": "Artist colony in a mountain valley; famous pink sunset moment known as the Pink Moment"
+  },
+  {
+    "name": "Idyllwild",
+    "lat": 33.7404,
+    "lng": -116.7181,
+    "tags": ["notable", "mountain", "southern-california"],
+    "interest": "Mountain arts community at 5,400 ft in the San Jacinto Mountains; gateway to wilderness"
+  },
+  {
+    "name": "Julian",
+    "lat": 33.0786,
+    "lng": -116.6020,
+    "tags": ["notable", "mountain", "southern-california"],
+    "interest": "1870s gold mining town famous for apple pies; charming mountain escape east of San Diego"
+  },
+  {
+    "name": "Nevada City",
+    "lat": 39.2613,
+    "lng": -121.0161,
+    "tags": ["notable", "gold-country", "northern-california"],
+    "interest": "Best-preserved Gold Rush town in California; vibrant arts community and Victorian downtown"
+  },
+  {
+    "name": "Grass Valley",
+    "lat": 39.2193,
+    "lng": -121.0608,
+    "tags": ["notable", "gold-country", "northern-california"],
+    "interest": "Home to the Empire Mine, one of the oldest and richest gold mines in California history"
+  },
+  {
+    "name": "Truckee",
+    "lat": 39.3280,
+    "lng": -120.1833,
+    "tags": ["notable", "mountain", "sierra-nevada"],
+    "interest": "Historic railroad town near Lake Tahoe and Donner Pass; year-round mountain recreation hub"
+  },
+  {
+    "name": "Bishop",
+    "lat": 37.3636,
+    "lng": -118.3951,
+    "tags": ["notable", "eastern-sierra", "sierra-nevada"],
+    "interest": "Gateway to the Eastern Sierra; Volcanic Tablelands petroglyphs and world-class bouldering"
+  },
+  {
+    "name": "Lone Pine",
+    "lat": 36.6060,
+    "lng": -118.0629,
+    "tags": ["notable", "eastern-sierra"],
+    "interest": "Gateway to Mt Whitney (14,505 ft, highest peak in contiguous US); Alabama Hills film location"
+  },
+  {
+    "name": "Bridgeport",
+    "lat": 38.2555,
+    "lng": -119.2316,
+    "tags": ["notable", "eastern-sierra"],
+    "interest": "Remote Mono County seat; gateway to Bodie ghost town and twin lakes backcountry"
+  },
+  {
+    "name": "Tuolumne Meadows",
+    "lat": 37.8735,
+    "lng": -119.3595,
+    "tags": ["notable", "sierra-nevada", "national-park"],
+    "interest": "Largest sub-alpine meadow in the Sierra Nevada at 8,600 ft; Yosemite high country gem"
+  },
+  {
+    "name": "June Lake",
+    "lat": 37.7810,
+    "lng": -119.0754,
+    "tags": ["notable", "eastern-sierra"],
+    "interest": "The Switzerland of California on the June Lake Loop; stunning fall colors and ski area"
+  },
+  {
+    "name": "Lee Vining",
+    "lat": 37.9577,
+    "lng": -119.1202,
+    "tags": ["notable", "eastern-sierra"],
+    "interest": "Gateway to Mono Lake with its otherworldly tufa towers; eastern entrance to Yosemite via Tioga Pass"
+  },
+  {
+    "name": "Dunsmuir",
+    "lat": 41.2081,
+    "lng": -122.2720,
+    "tags": ["notable", "northern-california"],
+    "interest": "Historic railroad town on the Sacramento River; surrounded by Castle Crags and Mt Shasta"
+  },
+  {
+    "name": "Weed",
+    "lat": 41.4227,
+    "lng": -122.3864,
+    "tags": ["notable", "northern-california"],
+    "interest": "Small lumber town at the base of Mt Shasta; named for founder Abner Weed, not the plant"
+  }
+]

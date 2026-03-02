@@ -8,11 +8,14 @@
     "build": "tsx script/build.ts",
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "post-spotlight": "tsx scripts/post-spotlight.ts",
+    "post-spotlight:dry": "tsx scripts/post-spotlight.ts --dry-run"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
+    "@napi-rs/canvas": "^0.1.95",
     "@radix-ui/react-avatar": "^1.1.4",
     "@radix-ui/react-dialog": "^1.1.7",
     "@radix-ui/react-dropdown-menu": "^2.1.7",
@@ -40,6 +43,7 @@
     "lucide-react": "^0.453.0",
     "memoizee": "^0.4.17",
     "memorystore": "^1.6.7",
+    "oauth-1.0a": "^2.2.6",
     "openai": "^6.16.0",
     "openid-client": "^6.8.1",
     "p-limit": "^7.2.0",

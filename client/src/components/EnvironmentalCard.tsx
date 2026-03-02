@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wind, Droplets, Thermometer, Trees, CheckCircle2, MessageCircle, Send, Loader2, Factory, AlertTriangle, ChevronDown, Lightbulb, Info, X, Minimize2, Maximize2, Share2, Check, Map, Shield, Database, ExternalLink, Leaf, Download, Image } from "lucide-react";
+import { Wind, Droplets, Thermometer, Trees, CheckCircle2, MessageCircle, Send, Loader2, Factory, AlertTriangle, ChevronDown, Lightbulb, Info, X, Minimize2, Maximize2, Share2, Check, Map, Shield, Database, ExternalLink, Leaf, Download, Image, Link, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
+import { getLetterGrade, getVibeLabel, computeAverage } from "@shared/grades";
 
 interface ScoreDetail {
   value: number;
@@ -28,22 +30,6 @@ interface ClimateTraceData {
     emissions: number;
     emissionsFormatted: string;
   }[];
-}
-
-function getLetterGrade(score: number): { letter: string; modifier: string } {
-  if (score >= 93) return { letter: "A", modifier: "+" };
-  if (score >= 85) return { letter: "A", modifier: "" };
-  if (score >= 80) return { letter: "A", modifier: "-" };
-  if (score >= 77) return { letter: "B", modifier: "+" };
-  if (score >= 70) return { letter: "B", modifier: "" };
-  if (score >= 65) return { letter: "B", modifier: "-" };
-  if (score >= 60) return { letter: "C", modifier: "+" };
-  if (score >= 50) return { letter: "C", modifier: "" };
-  if (score >= 45) return { letter: "C", modifier: "-" };
-  if (score >= 40) return { letter: "D", modifier: "+" };
-  if (score >= 30) return { letter: "D", modifier: "" };
-  if (score >= 20) return { letter: "D", modifier: "-" };
-  return { letter: "F", modifier: "" };
 }
 
 function getGradeColor(score: number): string {
@@ -590,13 +576,9 @@ export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimi
 
   const handleShareImage = useCallback(() => {
     const scores = data.scores;
-    const average = Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / Object.values(scores).length);
+    const average = computeAverage(scores as unknown as Record<string, number>);
     const overallGrade = getLetterGrade(average);
-    let vibeLabel = "Good";
-    if (average >= 80) vibeLabel = "Excellent";
-    else if (average < 30) vibeLabel = "Critical";
-    else if (average < 50) vibeLabel = "Poor";
-    else if (average < 70) vibeLabel = "Moderate";
+    const vibeLabel = getVibeLabel(average);
 
     const canvas = generateShareCard(data.location, scores as unknown as Record<string, number>, average, overallGrade, vibeLabel);
     shareCardRef.current = canvas;
@@ -675,15 +657,9 @@ export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimi
     );
   }
 
-  const scores = Object.values(data.scores);
-  const average = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+  const average = computeAverage(data.scores as unknown as Record<string, number>);
   const overallGrade = getLetterGrade(average);
-  
-  let vibeLabel = "Good";
-  if (average >= 80) vibeLabel = "Excellent";
-  else if (average < 30) vibeLabel = "Critical";
-  else if (average < 50) vibeLabel = "Poor";
-  else if (average < 70) vibeLabel = "Moderate";
+  const vibeLabel = getVibeLabel(average);
 
   if (isMinimized) {
     return (
@@ -761,12 +737,12 @@ export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimi
       </div>
       
       <div className="p-4 md:p-5 overflow-y-auto custom-scrollbar">
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-1 mb-4">
           <Button
             onClick={handleShareLink}
             variant="default"
             size="sm"
-            className={`flex-1 rounded-xl font-semibold text-sm ${
+            className={`flex-1 rounded-xl rounded-r-none font-semibold text-sm ${
               shareStatus === "copied"
                 ? "bg-green-500 text-white"
                 : "bg-primary text-white"
@@ -781,72 +757,49 @@ export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimi
             ) : (
               <>
                 <Share2 className="w-4 h-4 mr-1.5" />
-                Share Link
+                Share
               </>
             )}
           </Button>
-          <Button
-            onClick={handleShareImage}
-            variant="secondary"
-            size="sm"
-            className="flex-1 rounded-xl font-semibold text-sm border border-primary/20"
-            data-testid="button-share-card"
-          >
-            <Image className="w-4 h-4 mr-1.5" />
-            Share Card
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="default"
+                size="sm"
+                className="rounded-xl rounded-l-none border-l border-white/20 bg-primary text-white px-2"
+                data-testid="button-share-dropdown"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(getShareUrl());
+                  setShareStatus("copied");
+                  setTimeout(() => setShareStatus("idle"), 2500);
+                } catch {}
+              }}>
+                <Link className="w-4 h-4 mr-2" />
+                Copy Link
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                handleShareImage();
+                setTimeout(() => handleDownloadCard(), 100);
+              }}>
+                <Download className="w-4 h-4 mr-2" />
+                Download Image
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                handleShareImage();
+                setTimeout(() => handleNativeShareCard(), 100);
+              }}>
+                <Image className="w-4 h-4 mr-2" />
+                Share Image
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-
-        <AnimatePresence>
-          {showShareCard && shareCardRef.current && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-4 overflow-hidden"
-            >
-              <div className="rounded-xl overflow-hidden border border-secondary/50 shadow-md">
-                <img
-                  src={shareCardRef.current.toDataURL("image/png")}
-                  alt="Verde share card"
-                  className="w-full h-auto"
-                  data-testid="img-share-card"
-                />
-              </div>
-              <div className="flex gap-2 mt-2">
-                <Button
-                  onClick={handleDownloadCard}
-                  variant="default"
-                  size="sm"
-                  className="flex-1 rounded-xl text-sm bg-primary text-white"
-                  data-testid="button-download-card"
-                >
-                  <Download className="w-4 h-4 mr-1.5" />
-                  Download
-                </Button>
-                <Button
-                  onClick={handleNativeShareCard}
-                  variant="secondary"
-                  size="sm"
-                  className="flex-1 rounded-xl text-sm border border-primary/20"
-                  data-testid="button-native-share-card"
-                >
-                  <Share2 className="w-4 h-4 mr-1.5" />
-                  Share
-                </Button>
-                <Button
-                  onClick={() => setShowShareCard(false)}
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-xl text-sm"
-                  data-testid="button-close-share-card"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         <p className="text-sm text-muted-foreground leading-relaxed bg-secondary/20 p-3 rounded-lg border border-secondary/50 mb-4" data-testid="text-summary">
           {data.summary}

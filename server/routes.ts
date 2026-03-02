@@ -12,6 +12,7 @@ import { queryLandCover } from "./landCoverQuery";
 import { queryCalEnviroScreen, isCaliforniaLocation, CalEnviroScreenData } from "./calenviroScreenQuery";
 import { computeAirQualityScore, computeGreenSpaceScore, computePollutionScore, computeWaterQualityScore, computeClimateEmissionsScore, ScoreResult, CesData, ClimateEmissionsInput } from "./scoringEngine";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import { renderOgImage, getOgCacheKey, getFromOgCache, setInOgCache } from "./ogImage";
 
 // --- Analysis response cache ---
 const ANALYZE_CACHE_MAX = 500;
@@ -142,6 +143,98 @@ export async function registerRoutes(
   });
   app.use(api.analysis.analyze.path, strictLimiter);
   app.use(api.analysis.askQuestion.path, strictLimiter);
+
+  // OG image endpoint — NOT behind strict limiter (crawlers need access)
+  app.get("/api/og-image", async (req, res) => {
+    try {
+      const lat = parseFloat(req.query.lat as string);
+      const lng = parseFloat(req.query.lng as string);
+      if (isNaN(lat) || isNaN(lng)) {
+        return res.status(400).json({ message: "lat and lng query params required" });
+      }
+
+      // Check OG image cache first
+      const ogKey = getOgCacheKey(lat, lng);
+      const cachedPng = getFromOgCache(ogKey);
+      if (cachedPng) {
+        res.set({ "Content-Type": "image/png", "Cache-Control": "public, max-age=3600" });
+        return res.send(cachedPng);
+      }
+
+      // Check analyze cache for existing scores
+      const analyzeKey = getAnalyzeCacheKey(lat, lng);
+      let analysisData = getFromAnalyzeCache(analyzeKey);
+
+      // If no cached analysis, run a fresh one
+      if (!analysisData) {
+        const isCalifornia = isCaliforniaLocation(lat, lng);
+        const dbCount = await getEmissionsDatabaseCount();
+        const useDatabase = dbCount > 1000;
+
+        const [locationName, epaData, aqiData, climateData, landCoverData, cesRawData] = await Promise.all([
+          reverseGeocode(lat, lng),
+          queryNearbyEpaFacilities(lat, lng, 10),
+          queryAirQuality(lat, lng),
+          useDatabase ? queryEmissionsNearLocation(lat, lng, 50) : queryClimateTraceSources(lat, lng, 50),
+          queryLandCover(lat, lng, 1000),
+          isCalifornia ? queryCalEnviroScreen(lat, lng) : Promise.resolve(null),
+        ]);
+
+        const cesData = cesRawData ? toCesData(cesRawData) : null;
+        const landCoverInput = landCoverData.totalPixels > 0 ? {
+          vegetationPercentage: landCoverData.vegetationPercentage,
+          treePercentage: landCoverData.treePercentage,
+          builtPercentage: landCoverData.builtPercentage,
+          waterPercentage: landCoverData.waterPercentage,
+          cropPercentage: landCoverData.cropPercentage,
+        } : null;
+        const epaInput = epaData.totalFacilities > 0 ? {
+          totalFacilities: epaData.totalFacilities,
+          majorFacilities: epaData.majorFacilities,
+          facilitiesWithViolations: epaData.facilitiesWithViolations,
+        } : null;
+        const climateInput = climateData.sources.length > 0 ? {
+          totalEmissions: climateData.totalEmissions,
+          sources: climateData.sources.map((s: any) => ({ emissions: s.emissions })),
+        } : null;
+        const climateEmissionsInput: ClimateEmissionsInput | null = climateData.sources.length > 0 ? {
+          totalEmissions: climateData.totalEmissions,
+          sourcesCount: climateData.sources.length,
+          sectorBreakdown: climateData.sectorBreakdown,
+          topSources: climateData.sources.slice(0, 5).map((s: any) => ({
+            name: s.name, sector: s.sector, emissions: s.emissions,
+          })),
+          radiusKm: 50,
+        } : null;
+
+        const deterministicScores: Record<string, ScoreResult | null> = {
+          airQuality: computeAirQualityScore(aqiData.aqi, cesData),
+          greenSpace: computeGreenSpaceScore(landCoverInput, cesData),
+          pollution: computePollutionScore(epaInput, cesData, climateInput),
+          waterQuality: computeWaterQualityScore(cesData),
+          climateEmissions: computeClimateEmissionsScore(climateEmissionsInput, cesData),
+        };
+
+        const finalScores: Record<string, number> = {};
+        for (const [key, result] of Object.entries(deterministicScores)) {
+          if (result) finalScores[key] = result.score;
+        }
+        for (const key of ["airQuality", "waterQuality", "climateEmissions", "greenSpace", "pollution"]) {
+          if (finalScores[key] === undefined) finalScores[key] = 50;
+        }
+
+        analysisData = { location: locationName, scores: finalScores };
+      }
+
+      const png = await renderOgImage(analysisData.location, analysisData.scores);
+      setInOgCache(ogKey, png);
+      res.set({ "Content-Type": "image/png", "Cache-Control": "public, max-age=3600" });
+      return res.send(png);
+    } catch (error) {
+      console.error("OG image error:", error);
+      res.status(500).json({ message: "Failed to generate OG image" });
+    }
+  });
 
   // Pins API
   app.get(api.pins.list.path, async (req, res) => {
