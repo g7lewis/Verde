@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wind, Droplets, Thermometer, Trees, CheckCircle2, MessageCircle, Send, Loader2, Factory, AlertTriangle, ChevronDown, Lightbulb, Info, X, Minimize2, Maximize2, Share2, Check, Map, Shield, Database, ExternalLink, Leaf, Download, Image, Link, MoreVertical } from "lucide-react";
+import { Wind, Droplets, Thermometer, Trees, CheckCircle2, MessageCircle, Send, Loader2, Factory, AlertTriangle, ChevronDown, Lightbulb, Info, X, Minimize2, Maximize2, Share2, Check, Map, Shield, Database, ExternalLink, Leaf, Download, Image, Link, MoreVertical, MapPin, Bug, Navigation, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -333,10 +333,18 @@ interface EnvironmentalCardProps {
   isLoading?: boolean;
 }
 
+interface NearbyPin {
+  id: number;
+  type: string;
+  description: string;
+  distance: number;
+}
+
 interface EnvironmentalCardFullProps extends EnvironmentalCardProps {
   onClose?: () => void;
   isMinimized?: boolean;
   onToggleMinimize?: () => void;
+  nearbyPins?: NearbyPin[];
 }
 
 function generateShareCard(
@@ -513,7 +521,7 @@ function generateShareCard(
   return canvas;
 }
 
-export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimized, onToggleMinimize }: EnvironmentalCardFullProps) {
+export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimized, onToggleMinimize, nearbyPins }: EnvironmentalCardFullProps) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [isAsking, setIsAsking] = useState(false);
@@ -1013,11 +1021,62 @@ export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimi
           </div>
         )}
 
+        {nearbyPins && nearbyPins.length > 0 && (
+          <div className="mt-4 p-3 rounded-lg bg-violet-50 border border-violet-200" data-testid="section-nearby-pins">
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin className="w-4 h-4 text-violet-600" />
+              <span className="text-sm font-medium text-violet-800">Community Observations ({nearbyPins.length})</span>
+            </div>
+            <div className="flex flex-wrap gap-1 mb-2">
+              {(() => {
+                const typeCounts: Record<string, number> = {};
+                nearbyPins.forEach(p => {
+                  typeCounts[p.type] = (typeCounts[p.type] || 0) + 1;
+                });
+                const pinTypeConfig: Record<string, { icon: typeof MapPin; color: string }> = {
+                  pollution: { icon: AlertTriangle, color: "bg-red-100 text-red-800 border-red-200" },
+                  animal: { icon: Bug, color: "bg-green-100 text-green-800 border-green-200" },
+                  trail: { icon: Navigation, color: "bg-amber-100 text-amber-800 border-amber-200" },
+                  other: { icon: Eye, color: "bg-violet-100 text-violet-800 border-violet-200" },
+                };
+                return Object.entries(typeCounts).map(([type, count]) => {
+                  const config = pinTypeConfig[type] || pinTypeConfig.other;
+                  const TypeIcon = config.icon;
+                  return (
+                    <Badge key={type} variant="secondary" className={`text-xs ${config.color}`}>
+                      <TypeIcon className="w-3 h-3 mr-1" />
+                      {count} {type}{count > 1 ? "s" : ""}
+                    </Badge>
+                  );
+                });
+              })()}
+            </div>
+            <div className="space-y-1.5 max-h-32 overflow-y-auto">
+              {nearbyPins.slice(0, 8).map((pin) => {
+                const distLabel = pin.distance < 1
+                  ? `${(pin.distance * 1000).toFixed(0)}m`
+                  : `${pin.distance.toFixed(1)}km`;
+                return (
+                  <div key={pin.id} className="flex items-start gap-2 text-xs text-violet-700" data-testid={`pin-nearby-${pin.id}`}>
+                    <span className="capitalize font-medium whitespace-nowrap">{pin.type}</span>
+                    <span className="text-violet-400">·</span>
+                    <span className="truncate flex-1">{pin.description}</span>
+                    <span className="text-violet-400 whitespace-nowrap">{distLabel}</span>
+                  </div>
+                );
+              })}
+              {nearbyPins.length > 8 && (
+                <div className="text-xs text-violet-400 text-center">+{nearbyPins.length - 8} more</div>
+              )}
+            </div>
+          </div>
+        )}
+
         {data.landCoverContext && data.landCoverContext.classes.length > 0 && (
           <div className="mt-4 p-3 rounded-lg bg-sky-50 border border-sky-200" data-testid="section-land-cover">
             <div className="flex items-center gap-2 mb-2">
               <Map className="w-4 h-4 text-sky-600" />
-              <span className="text-sm font-medium text-sky-800">Land Use (1km radius)</span>
+              <span className="text-sm font-medium text-sky-800">Land Use (3km radius)</span>
               {lat != null && lng != null && (
                 <a href={`https://browser.dataspace.copernicus.eu/?zoom=14&lat=${lat}&lng=${lng}`} target="_blank" rel="noopener noreferrer"
                    className="ml-auto text-xs text-sky-500 hover:text-sky-700 transition-colors flex items-center gap-0.5">

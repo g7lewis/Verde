@@ -135,7 +135,15 @@ export function computeGreenSpaceScore(
   const builtPenalty = Math.min(landCoverData.builtPercentage * 0.5, 30);
   const waterBonus = Math.min(landCoverData.waterPercentage * 0.3, 10);
 
-  let finalScore = clamp(vegScore + treeBonus - builtPenalty + waterBonus + 15, 0, 100);
+  let rawScore = vegScore + treeBonus - builtPenalty + waterBonus + 15;
+  let finalScore = clamp(rawScore, 0, 100);
+
+  if (landCoverData.builtPercentage > 90) {
+    const urbanFloor = 30 - Math.floor((landCoverData.builtPercentage - 90) / 2);
+    finalScore = Math.max(finalScore, clamp(urbanFloor, 20, 30));
+  }
+
+  finalScore = Math.max(finalScore, 10);
 
   factors.push(`Vegetation cover: ${landCoverData.vegetationPercentage.toFixed(1)}%`);
   factors.push(`Tree cover: ${landCoverData.treePercentage.toFixed(1)}%`);
@@ -313,8 +321,16 @@ export function computeClimateEmissionsScore(
   climateInput: ClimateEmissionsInput | null,
   cesData?: CesData | null
 ): ScoreResult | null {
-  if (!climateInput || (climateInput.sourcesCount === 0 && climateInput.totalEmissions === 0)) {
+  if (!climateInput) {
     return null;
+  }
+
+  if (climateInput.sourcesCount === 0 && climateInput.totalEmissions === 0) {
+    return {
+      score: 97,
+      factors: ["No emission sources detected within 15km"],
+      tips: ["Minimal industrial emissions — this area has excellent air and climate conditions"],
+    };
   }
 
   const factors: string[] = [];
@@ -323,23 +339,25 @@ export function computeClimateEmissionsScore(
   const emissionsMt = climateInput.totalEmissions / 1_000_000;
 
   let finalScore: number;
-  if (emissionsMt <= 0.01) {
+  if (emissionsMt <= 0.001) {
     finalScore = 95;
+  } else if (emissionsMt <= 0.01) {
+    finalScore = 88;
   } else if (emissionsMt <= 0.1) {
-    finalScore = 85;
-  } else if (emissionsMt <= 1) {
-    finalScore = 75;
+    finalScore = 78;
+  } else if (emissionsMt <= 0.5) {
+    finalScore = 70 - Math.min((emissionsMt - 0.1) * 25, 15);
+  } else if (emissionsMt <= 2) {
+    finalScore = 55 - Math.min((emissionsMt - 0.5) * 10, 15);
   } else if (emissionsMt <= 10) {
-    finalScore = 65 - Math.min((emissionsMt - 1) * 2.5, 20);
-  } else if (emissionsMt <= 100) {
-    finalScore = 45 - Math.min((emissionsMt - 10) * 0.3, 20);
+    finalScore = 40 - Math.min((emissionsMt - 2) * 2, 15);
   } else {
-    finalScore = 25 - Math.min(Math.log10(emissionsMt / 100) * 10, 20);
+    finalScore = 25 - Math.min(Math.log10(emissionsMt / 10) * 8, 15);
   }
 
   const sectorCount = Object.keys(climateInput.sectorBreakdown).length;
-  if (sectorCount > 10) {
-    finalScore -= Math.min((sectorCount - 10) * 0.5, 5);
+  if (sectorCount > 5) {
+    finalScore -= Math.min((sectorCount - 5) * 0.5, 5);
   }
 
   factors.push(`${climateInput.sourcesCount} emission sources within ${climateInput.radiusKm}km`);
@@ -365,7 +383,7 @@ export function computeClimateEmissionsScore(
 
   if (cesData && cesData.trafficP !== undefined) {
     const trafficScore = percentileToScore(cesData.trafficP)!;
-    finalScore = clamp(finalScore * 0.7 + trafficScore * 0.3, 0, 100);
+    finalScore = clamp(finalScore * 0.8 + trafficScore * 0.2, 0, 100);
     factors.push(`CES traffic density: ${cesData.trafficP.toFixed(0)}th percentile`);
   }
 
