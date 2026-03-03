@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { pins, emailSubscribers, users, type InsertPin, type Pin, type InsertEmailSubscriber, type EmailSubscriber, type User } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   getPins(): Promise<Pin[]>;
@@ -11,6 +11,7 @@ export interface IStorage {
   resetDailyAnalysisCount(userId: string): Promise<void>;
   incrementAnalysisCount(userId: string): Promise<void>;
   updateUserGamification(userId: string, updates: Partial<User>): Promise<void>;
+  getPinById(id: number): Promise<Pin | null>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -21,6 +22,11 @@ export class DatabaseStorage implements IStorage {
   async createPin(insertPin: InsertPin): Promise<Pin> {
     const [pin] = await db.insert(pins).values(insertPin).returning();
     return pin;
+  }
+
+  async getPinById(id: number): Promise<Pin | null> {
+    const results = await db.select().from(pins).where(eq(pins.id, id));
+    return results[0] || null;
   }
 
   async createEmailSubscriber(subscriber: InsertEmailSubscriber): Promise<EmailSubscriber> {

@@ -13,6 +13,17 @@ import { queryCalEnviroScreen, isCaliforniaLocation, CalEnviroScreenData } from 
 import { computeAirQualityScore, computeGreenSpaceScore, computePollutionScore, computeWaterQualityScore, computeClimateEmissionsScore, ScoreResult, CesData, ClimateEmissionsInput } from "./scoringEngine";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { renderOgImage, getOgCacheKey, getFromOgCache, setInOgCache } from "./ogImage";
+import {
+  getLeaderboard,
+  getPreviousLeaderboard,
+  getCommunityStats,
+  getRecentPins,
+  upvotePin,
+  addMonthlyPoints,
+  computePinPoints,
+  getCurrentMonthKey,
+  getUserRank,
+} from "./leaderboard";
 
 // --- Analysis response cache ---
 const ANALYZE_CACHE_MAX = 500;
@@ -242,16 +253,98 @@ export async function registerRoutes(
     res.json(pins);
   });
 
-  app.post(api.pins.create.path, async (req, res) => {
+  app.post(api.pins.create.path, async (req: any, res) => {
     try {
       const input = api.pins.create.input.parse(req.body);
-      const pin = await storage.createPin(input);
+
+      // Attach userId from session if authenticated
+      const userId = req.user?.claims?.sub || null;
+      const pin = await storage.createPin({ ...input, userId });
+
+      // Update monthly contributions if authenticated
+      if (userId) {
+        const streakDays = 0; // streak is computed in gamification/update
+        const pts = computePinPoints(input.description || "", streakDays, false);
+        await addMonthlyPoints(userId, pts.total, "pin");
+      }
+
       res.status(201).json(pin);
     } catch (err) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({ message: err.errors[0].message });
       }
       throw err;
+    }
+  });
+
+  // Recent pins with user info
+  app.get("/api/pins/recent", async (_req, res) => {
+    try {
+      const recentPins = await getRecentPins(50);
+      res.json(recentPins);
+    } catch (err) {
+      console.error("Recent pins error:", err);
+      res.status(500).json({ message: "Failed to fetch recent pins" });
+    }
+  });
+
+  // Upvote a pin (seed)
+  app.post("/api/pins/:pinId/upvote", isAuthenticated, async (req: any, res) => {
+    try {
+      const pinId = parseInt(req.params.pinId, 10);
+      if (isNaN(pinId)) return res.status(400).json({ message: "Invalid pin ID" });
+
+      const userId = req.user.claims.sub;
+      const result = await upvotePin(pinId, userId);
+
+      if (!result.success) {
+        return res.status(409).json({ message: result.message });
+      }
+      res.json(result);
+    } catch (err) {
+      console.error("Upvote error:", err);
+      res.status(500).json({ message: "Failed to upvote" });
+    }
+  });
+
+  // Leaderboard — current month
+  app.get("/api/leaderboard/current", async (req: any, res) => {
+    try {
+      const month = getCurrentMonthKey();
+      const entries = await getLeaderboard(month, 20);
+
+      // Include user's own rank if authenticated
+      let userRank = null;
+      if (req.user?.claims?.sub) {
+        userRank = await getUserRank(req.user.claims.sub, month);
+      }
+
+      res.json({ month, entries, userRank });
+    } catch (err) {
+      console.error("Leaderboard error:", err);
+      res.status(500).json({ message: "Failed to fetch leaderboard" });
+    }
+  });
+
+  // Leaderboard — previous month (with lazy snapshotting)
+  app.get("/api/leaderboard/previous", async (_req, res) => {
+    try {
+      const entries = await getPreviousLeaderboard(20);
+      res.json({ entries });
+    } catch (err) {
+      console.error("Previous leaderboard error:", err);
+      res.status(500).json({ message: "Failed to fetch previous leaderboard" });
+    }
+  });
+
+  // Community stats (aggregates for landing page)
+  app.get("/api/stats/community", async (_req, res) => {
+    try {
+      const stats = await getCommunityStats();
+      res.json(stats);
+    } catch (err) {
+      console.error("Community stats error:", err);
+      res.status(500).json({ message: "Failed to fetch community stats" });
     }
   });
 
@@ -898,9 +991,12 @@ Return ONLY valid JSON.`;
       if (action === 'pin_dropped') {
         pointsEarned = 10 + streakBonus;
         updates.pinsDropped = (user.pinsDropped || 0) + 1;
+        // Also track monthly contribution
+        await addMonthlyPoints(userId, pointsEarned, "pin");
       } else if (action === 'location_explored') {
         pointsEarned = 5 + streakBonus;
         updates.locationsExplored = (user.locationsExplored || 0) + 1;
+        await addMonthlyPoints(userId, pointsEarned, "explore");
       }
       
       updates.totalPoints = (user.totalPoints || 0) + pointsEarned;

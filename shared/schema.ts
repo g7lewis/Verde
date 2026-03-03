@@ -1,9 +1,9 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, doublePrecision, varchar, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Export auth models for Replit Auth
-export * from "./models/auth"; 
+export * from "./models/auth";
 
 export const pins = pgTable("pins", {
   id: serial("id").primaryKey(),
@@ -11,13 +11,55 @@ export const pins = pgTable("pins", {
   lng: doublePrecision("lng").notNull(),
   type: text("type").notNull(), // 'pollution', 'animal', 'trail', 'other'
   description: text("description").notNull(),
+  userId: varchar("user_id"), // FK → users.id, nullable for old pins
+  upvotes: integer("upvotes").default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const insertPinSchema = createInsertSchema(pins).omit({ id: true, createdAt: true });
+export const insertPinSchema = createInsertSchema(pins).omit({ id: true, createdAt: true, upvotes: true });
 
 export type Pin = typeof pins.$inferSelect;
 export type InsertPin = z.infer<typeof insertPinSchema>;
+
+// Pin upvotes — tracks who upvoted which pin
+export const pinUpvotes = pgTable("pin_upvotes", {
+  id: serial("id").primaryKey(),
+  pinId: integer("pin_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  uniqueIndex("pin_upvotes_pin_user_idx").on(table.pinId, table.userId),
+]);
+
+export type PinUpvote = typeof pinUpvotes.$inferSelect;
+
+// Monthly contributions — aggregated per user per month
+export const monthlyContributions = pgTable("monthly_contributions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  month: varchar("month").notNull(), // e.g. "2026-03"
+  points: integer("points").default(0),
+  pinsDropped: integer("pins_dropped").default(0),
+  upvotesReceived: integer("upvotes_received").default(0),
+  locationsExplored: integer("locations_explored").default(0),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  uniqueIndex("monthly_contributions_user_month_idx").on(table.userId, table.month),
+]);
+
+export type MonthlyContribution = typeof monthlyContributions.$inferSelect;
+
+// Monthly leaderboard snapshots — finalized at month end
+export const monthlyLeaderboardSnapshots = pgTable("monthly_leaderboard_snapshots", {
+  id: serial("id").primaryKey(),
+  month: varchar("month").notNull(), // e.g. "2026-02"
+  userId: varchar("user_id").notNull(),
+  rank: integer("rank").notNull(),
+  points: integer("points").notNull(),
+  tier: varchar("tier").notNull(), // 'sprout', 'sapling', 'timber', 'old_growth'
+  pinsDropped: integer("pins_dropped").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 // Email subscribers for air quality alerts
 export const emailSubscribers = pgTable("email_subscribers", {

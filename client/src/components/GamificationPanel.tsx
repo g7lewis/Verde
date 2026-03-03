@@ -4,6 +4,8 @@ import { Trophy, Star, Target, Flame, ChevronDown, ChevronUp, Award } from 'luci
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge as BadgeType } from '@/lib/gamification';
+import { computeTierFromPoints } from '@/lib/leaderboard';
+import { TierBadge } from '@/components/landing/TierBadge';
 
 interface GamificationPanelProps {
   stats: {
@@ -41,7 +43,10 @@ export function GamificationPanel({ stats, levelInfo }: GamificationPanelProps) 
             <Trophy className="w-5 h-5 text-white" />
           </div>
           <div className="text-left">
-            <div className="font-bold text-sm text-foreground">Level {levelInfo.level} - {levelInfo.title}</div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-sm text-foreground">Level {levelInfo.level} - {levelInfo.title}</span>
+              <TierBadge tier={computeTierFromPoints(stats.points)} size="sm" showLabel={false} />
+            </div>
             <div className="text-xs text-muted-foreground">{stats.points} points</div>
           </div>
         </div>

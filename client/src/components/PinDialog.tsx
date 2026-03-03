@@ -58,9 +58,9 @@ export function PinDialog({ open, onOpenChange, location, onPinCreated }: PinDia
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] rounded-2xl overflow-hidden border-none shadow-2xl">
         <DialogHeader className="bg-primary/5 p-6 pb-2">
-          <DialogTitle className="font-display text-2xl text-primary">Drop a Pin</DialogTitle>
+          <DialogTitle className="font-display text-2xl text-primary">Plant a Seed</DialogTitle>
           <DialogDescription>
-            Share an environmental observation at this location.
+            Share an environmental observation at this location. Detailed descriptions (50+ characters) earn bonus points!
           </DialogDescription>
         </DialogHeader>
 
@@ -113,7 +113,7 @@ export function PinDialog({ open, onOpenChange, location, onPinCreated }: PinDia
               disabled={createPin.isPending}
               className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20"
             >
-              {createPin.isPending ? "Dropping..." : "Drop Pin"}
+              {createPin.isPending ? "Planting..." : "Plant Seed"}
             </Button>
           </div>
         </form>
