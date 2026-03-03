@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Star, Target, Flame, ChevronDown, ChevronUp, Award } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Star, Target, Flame, ChevronDown, ChevronUp, Award } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Badge as BadgeType } from '@/lib/gamification';
-import { computeTierFromPoints } from '@/lib/leaderboard';
+import { computeTierFromPoints, getTierDef, getTierProgress } from '@/lib/leaderboard';
 import { TierBadge } from '@/components/landing/TierBadge';
 
 interface GamificationPanelProps {
@@ -28,6 +27,11 @@ export function GamificationPanel({ stats, levelInfo }: GamificationPanelProps) 
 
   if (!stats || !levelInfo) return null;
 
+  const tier = computeTierFromPoints(stats.points);
+  const tierDef = getTierDef(tier);
+  const { next, progress } = getTierProgress(stats.points);
+  const TierIcon = tierDef.icon;
+
   const earnedBadges = stats.badges.filter(b => b.earned);
   const unearnedBadges = stats.badges.filter(b => !b.earned);
 
@@ -39,15 +43,12 @@ export function GamificationPanel({ stats, levelInfo }: GamificationPanelProps) 
         data-testid="button-toggle-gamification"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
-            <Trophy className="w-5 h-5 text-white" />
+          <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${tierDef.gradientClass} flex items-center justify-center shadow-lg`}>
+            <TierIcon className="w-5 h-5 text-white" />
           </div>
           <div className="text-left">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-foreground">Level {levelInfo.level} - {levelInfo.title}</span>
-              <TierBadge tier={computeTierFromPoints(stats.points)} size="sm" showLabel={false} />
-            </div>
-            <div className="text-xs text-muted-foreground">{stats.points} points</div>
+            <div className="font-bold text-sm text-foreground">{tierDef.label}</div>
+            <div className="text-xs text-muted-foreground">{stats.points} pts</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -71,22 +72,28 @@ export function GamificationPanel({ stats, levelInfo }: GamificationPanelProps) 
             className="overflow-hidden"
           >
             <div className="px-4 pb-4 space-y-4">
+              {/* Tier progress */}
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Progress to Level {levelInfo.level + 1}</span>
-                  <span className="font-medium">{Math.round(levelInfo.progress)}%</span>
+                  <span className="text-muted-foreground">
+                    {next ? `Progress to ${next.label}` : 'Max tier reached'}
+                  </span>
+                  <span className="font-medium">{Math.round(progress)}%</span>
                 </div>
-                <Progress value={levelInfo.progress} className="h-2" />
-                <div className="text-xs text-muted-foreground text-right">
-                  {stats.points} / {levelInfo.nextLevelPoints} XP
-                </div>
+                <Progress value={progress} className="h-2" />
+                {next && (
+                  <div className="text-xs text-muted-foreground text-right">
+                    {stats.points} / {next.minPoints} pts
+                  </div>
+                )}
               </div>
 
+              {/* Stats grid — use Verde vocab */}
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="bg-muted/50 rounded-xl p-2" data-testid="stat-pins">
                   <Target className="w-4 h-4 mx-auto text-green-600 mb-1" />
                   <div className="text-lg font-bold">{stats.pinsDropped}</div>
-                  <div className="text-xs text-muted-foreground">Pins</div>
+                  <div className="text-xs text-muted-foreground">Seeds</div>
                 </div>
                 <div className="bg-muted/50 rounded-xl p-2" data-testid="stat-explored">
                   <Star className="w-4 h-4 mx-auto text-blue-600 mb-1" />
@@ -105,7 +112,7 @@ export function GamificationPanel({ stats, levelInfo }: GamificationPanelProps) 
                   <h4 className="text-xs font-semibold text-muted-foreground mb-2">Earned Badges</h4>
                   <div className="flex flex-wrap gap-2">
                     {earnedBadges.map(badge => (
-                      <div 
+                      <div
                         key={badge.id}
                         className="flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-full px-2.5 py-1"
                         title={badge.description}
@@ -124,7 +131,7 @@ export function GamificationPanel({ stats, levelInfo }: GamificationPanelProps) 
                   <h4 className="text-xs font-semibold text-muted-foreground mb-2">Next Badges</h4>
                   <div className="flex flex-wrap gap-2">
                     {unearnedBadges.slice(0, 4).map(badge => (
-                      <div 
+                      <div
                         key={badge.id}
                         className="flex items-center gap-1.5 bg-muted/30 border border-muted rounded-full px-2.5 py-1 opacity-60"
                         title={`${badge.description} (${badge.requirement} required)`}

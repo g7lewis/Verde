@@ -59,6 +59,21 @@ export function computeTierFromPoints(points: number, rank?: number): TierName {
   return "sprout";
 }
 
+export function getTierProgress(points: number): { current: TierDef; next: TierDef | null; progress: number } {
+  const tier = computeTierFromPoints(points);
+  const current = getTierDef(tier);
+
+  // Find next tier (TIERS is ordered sprout → old_growth)
+  const currentIdx = TIERS.findIndex((t) => t.name === tier);
+  const next = currentIdx < TIERS.length - 1 ? TIERS[currentIdx + 1] : null;
+
+  if (!next) return { current, next: null, progress: 100 };
+
+  const range = next.minPoints - current.minPoints;
+  const progress = Math.min(((points - current.minPoints) / range) * 100, 100);
+  return { current, next, progress };
+}
+
 export interface LeaderboardEntry {
   userId: string;
   firstName: string | null;

@@ -790,8 +790,8 @@ export default function Home() {
                     data-testid="button-drop-pin"
                   >
                     <MapPin className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                    <span className="hidden sm:inline">Drop a Pin Here</span>
-                    <span className="sm:hidden">Pin</span>
+                    <span className="hidden sm:inline">Plant a Seed</span>
+                    <span className="sm:hidden">Seed</span>
                   </Button>
                 </motion.div>
               )}

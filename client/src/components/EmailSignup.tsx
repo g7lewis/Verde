@@ -64,10 +64,10 @@ export function EmailSignup({ lat, lng, locationName, variant = "card" }: EmailS
               exit={{ opacity: 0 }}
             >
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={() => setIsExpanded(true)}
-                className="gap-2"
+                className="gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 data-testid="button-expand-email-signup"
               >
                 <Bell className="w-4 h-4" />
