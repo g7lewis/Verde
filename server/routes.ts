@@ -890,6 +890,33 @@ Return ONLY valid JSON.`;
     }
   });
 
+  // WAQI tile proxy — keeps API token server-side
+  const waqiTileRateLimit = rateLimit({ windowMs: 60_000, max: 300 });
+  app.get("/api/waqi-tile/:z/:x/:y", waqiTileRateLimit, async (req, res) => {
+    const { z, x, y } = req.params;
+    // Validate tile coords are integers
+    if (!/^\d+$/.test(z) || !/^\d+$/.test(x) || !/^\d+$/.test(y)) {
+      return res.status(400).json({ message: "Invalid tile coordinates" });
+    }
+    const token = process.env.WAQI_API_TOKEN || "demo";
+    try {
+      const upstream = await fetch(
+        `https://tiles.waqi.info/tiles/usepa-aqi/${z}/${x}/${y}.png?token=${token}`,
+        { headers: { "User-Agent": "Verde/1.0 (environmental mapping app)" } }
+      );
+      if (!upstream.ok) {
+        return res.status(upstream.status).end();
+      }
+      const contentType = upstream.headers.get("content-type");
+      if (contentType) res.setHeader("Content-Type", contentType);
+      res.setHeader("Cache-Control", "public, max-age=300");
+      const buffer = Buffer.from(await upstream.arrayBuffer());
+      res.send(buffer);
+    } catch {
+      res.status(502).json({ message: "Failed to fetch WAQI tile" });
+    }
+  });
+
   // Subscription status endpoint
   app.get("/api/subscription/status", isAuthenticated, async (req: any, res) => {
     try {

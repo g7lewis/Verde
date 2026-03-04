@@ -224,7 +224,7 @@ export default function Home() {
     return () => clearTimeout(timeoutId);
   }, []);
 
-  // Fetch emissions sources when climate layer is enabled
+  // Fetch emissions sources when climate layer is enabled (with AbortController)
   // Use viewportBounds (from panning) if available, otherwise fall back to center with defaults
   const effectiveCenter = viewportCenter || center;
   useEffect(() => {
@@ -233,6 +233,7 @@ export default function Home() {
       return;
     }
 
+    const abortController = new AbortController();
     const fetchEmissions = async () => {
       setLoadingEmissions(true);
       try {
@@ -243,42 +244,59 @@ export default function Home() {
           maxLng: effectiveCenter[1] + 5,
         };
 
-        const response = await fetch(`/api/emissions-sources?minLat=${bounds.minLat}&maxLat=${bounds.maxLat}&minLng=${bounds.minLng}&maxLng=${bounds.maxLng}`);
+        const response = await fetch(
+          `/api/emissions-sources?minLat=${bounds.minLat}&maxLat=${bounds.maxLat}&minLng=${bounds.minLng}&maxLng=${bounds.maxLng}`,
+          { signal: abortController.signal }
+        );
         if (response.ok) {
           const data = await response.json();
           const sources = (data.sources || []).slice(0, 500);
           setEmissionsSources(sources);
         }
       } catch (error) {
-        console.error("Failed to fetch emissions sources:", error);
+        if ((error as Error).name !== "AbortError") {
+          console.error("Failed to fetch emissions sources:", error);
+        }
       } finally {
-        setLoadingEmissions(false);
+        if (!abortController.signal.aborted) {
+          setLoadingEmissions(false);
+        }
       }
     };
 
     fetchEmissions();
+    return () => abortController.abort();
   }, [layers.climate, effectiveCenter, viewportBounds]);
 
-  // Fetch EPA facilities when pollution layer is enabled
+  // Fetch EPA facilities when pollution layer is enabled (debounced + cancellable)
   useEffect(() => {
     if (!layers.pollution || !effectiveCenter) {
       setEpaFacilities([]);
       return;
     }
-    
-    const fetchEpa = async () => {
+
+    const abortController = new AbortController();
+    const debounceTimer = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/epa-facilities?lat=${effectiveCenter[0]}&lng=${effectiveCenter[1]}&radius=100`);
+        const response = await fetch(
+          `/api/epa-facilities?lat=${effectiveCenter[0]}&lng=${effectiveCenter[1]}&radius=100`,
+          { signal: abortController.signal }
+        );
         if (response.ok) {
           const data = await response.json();
           setEpaFacilities(data.facilities || []);
         }
       } catch (error) {
-        console.error("Failed to fetch EPA facilities:", error);
+        if ((error as Error).name !== "AbortError") {
+          console.error("Failed to fetch EPA facilities:", error);
+        }
       }
+    }, 2000);
+
+    return () => {
+      clearTimeout(debounceTimer);
+      abortController.abort();
     };
-    
-    fetchEpa();
   }, [layers.pollution, effectiveCenter]);
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -451,7 +469,7 @@ export default function Home() {
             {/* Visual Layers */}
             {layers.air && center && (
               <TileLayer
-                url="https://tiles.waqi.info/tiles/usepa-aqi/{z}/{x}/{y}.png?token=demo"
+                url="/api/waqi-tile/{z}/{x}/{y}"
                 opacity={0.4}
               />
             )}
