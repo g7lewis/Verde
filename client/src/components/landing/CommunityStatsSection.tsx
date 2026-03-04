@@ -4,10 +4,12 @@ import { useCommunityStats } from "@/hooks/use-community-stats";
 import { motion } from "framer-motion";
 
 const PIN_TYPE_COLORS: Record<string, { color: string; label: string }> = {
-  pollution: { color: "#ef4444", label: "Pollution" },
-  animal: { color: "#f97316", label: "Wildlife" },
+  pollution: { color: "#ef4444", label: "Concern" },
+  wildlife: { color: "#f97316", label: "Wildlife" },
   trail: { color: "#22c55e", label: "Trail/Park" },
-  other: { color: "#3b82f6", label: "Other" },
+  water: { color: "#3b82f6", label: "Water" },
+  restoration: { color: "#8b5cf6", label: "Restoration" },
+  other: { color: "#6b7280", label: "Other" },
 };
 
 function AnimatedCounter({ target, label, icon: Icon }: { target: number; label: string; icon: any }) {

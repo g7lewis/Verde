@@ -7,9 +7,11 @@ import { motion } from "framer-motion";
 
 const PIN_COLORS: Record<string, string> = {
   pollution: "#ef4444",
-  animal: "#f97316",
+  wildlife: "#f97316",
   trail: "#22c55e",
-  other: "#3b82f6",
+  water: "#3b82f6",
+  restoration: "#8b5cf6",
+  other: "#6b7280",
 };
 
 function SeedCard({ pin }: { pin: RecentPin }) {

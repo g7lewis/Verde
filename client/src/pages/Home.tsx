@@ -51,14 +51,18 @@ const createPinIcon = (color: string, svgPath: string) => {
 };
 
 const icons = {
-  // Wildlife/Animal - Orange with paw print
-  animal: createPinIcon("#ea580c", '<circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="4" cy="8" r="2"/><path d="M12 14c3 0 5 2 5 5a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2c0-3 2-5 5-5"/>'),
+  // Wildlife - Orange with paw print
+  wildlife: createPinIcon("#f97316", '<circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="4" cy="8" r="2"/><path d="M12 14c3 0 5 2 5 5a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2c0-3 2-5 5-5"/>'),
   // Pollution/Concern - Red with warning triangle
-  pollution: createPinIcon("#dc2626", '<path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.363 3.591l-8.106 13.534A1.914 1.914 0 0 0 3.9 20h16.2a1.914 1.914 0 0 0 1.643-2.875l-8.106-13.534a1.914 1.914 0 0 0-3.274 0z"/>'),
+  pollution: createPinIcon("#ef4444", '<path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.363 3.591l-8.106 13.534A1.914 1.914 0 0 0 3.9 20h16.2a1.914 1.914 0 0 0 1.643-2.875l-8.106-13.534a1.914 1.914 0 0 0-3.274 0z"/>'),
   // Trail/Park - Green with trees
-  trail: createPinIcon("#16a34a", '<path d="M12 3v18"/><path d="M5 12l7-4 7 4"/><path d="M5 18l7-4 7 4"/>'),
-  // Other - Blue with info icon
-  other: createPinIcon("#2563eb", '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>'),
+  trail: createPinIcon("#22c55e", '<path d="M12 3v18"/><path d="M5 12l7-4 7 4"/><path d="M5 18l7-4 7 4"/>'),
+  // Water - Blue with droplets
+  water: createPinIcon("#3b82f6", '<path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 14.06c1.32 0 2.44-1.1 2.44-2.43 0-.7-.34-1.36-1.03-1.92-.66-.55-1.17-1.18-1.41-1.91-.24.73-.75 1.36-1.41 1.91-.69.56-1.03 1.22-1.03 1.92 0 1.33 1.12 2.43 2.44 2.43z"/>'),
+  // Restoration - Purple with sprout
+  restoration: createPinIcon("#8b5cf6", '<path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/>'),
+  // Other - Gray with info icon
+  other: createPinIcon("#6b7280", '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>'),
   // User location marker
   user: L.divIcon({
     className: "user-pin",

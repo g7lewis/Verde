@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useCreatePin } from "@/hooks/use-pins";
-import { Trees, Trash2, PawPrint, HelpCircle } from "lucide-react";
+import { Trees, Trash2, PawPrint, HelpCircle, Droplets, Sprout } from "lucide-react";
 import clsx from "clsx";
 
 interface PinDialogProps {
@@ -21,10 +21,10 @@ interface PinDialogProps {
   onPinCreated?: () => void;
 }
 
-type PinType = "animal" | "pollution" | "trail" | "other";
+type PinType = "wildlife" | "pollution" | "trail" | "water" | "restoration" | "other";
 
 export function PinDialog({ open, onOpenChange, location, onPinCreated }: PinDialogProps) {
-  const [type, setType] = useState<PinType>("animal");
+  const [type, setType] = useState<PinType>("wildlife");
   const [description, setDescription] = useState("");
   const createPin = useCreatePin();
 
@@ -41,17 +41,19 @@ export function PinDialog({ open, onOpenChange, location, onPinCreated }: PinDia
       onSuccess: () => {
         onOpenChange(false);
         setDescription("");
-        setType("animal");
+        setType("wildlife");
         onPinCreated?.();
       }
     });
   };
 
   const types = [
-    { id: "animal", label: "Wildlife", icon: PawPrint, color: "bg-orange-100 text-orange-600 border-orange-200" },
+    { id: "wildlife", label: "Wildlife", icon: PawPrint, color: "bg-orange-100 text-orange-600 border-orange-200" },
     { id: "trail", label: "Trail/Park", icon: Trees, color: "bg-green-100 text-green-600 border-green-200" },
     { id: "pollution", label: "Concern", icon: Trash2, color: "bg-red-100 text-red-600 border-red-200" },
-    { id: "other", label: "Other", icon: HelpCircle, color: "bg-blue-100 text-blue-600 border-blue-200" },
+    { id: "water", label: "Water", icon: Droplets, color: "bg-blue-100 text-blue-600 border-blue-200" },
+    { id: "restoration", label: "Restoration", icon: Sprout, color: "bg-purple-100 text-purple-600 border-purple-200" },
+    { id: "other", label: "Other", icon: HelpCircle, color: "bg-gray-100 text-gray-600 border-gray-200" },
   ] as const;
 
   return (
@@ -67,7 +69,7 @@ export function PinDialog({ open, onOpenChange, location, onPinCreated }: PinDia
         <form onSubmit={handleSubmit} className="p-6 pt-2 space-y-6">
           <div className="space-y-3">
             <Label>What did you see?</Label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               {types.map((t) => (
                 <button
                   key={t.id}

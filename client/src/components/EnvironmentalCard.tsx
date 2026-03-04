@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wind, Droplets, Thermometer, Trees, CheckCircle2, MessageCircle, Send, Loader2, Factory, AlertTriangle, ChevronDown, Lightbulb, Info, X, Minimize2, Maximize2, Share2, Check, Map, Shield, Database, ExternalLink, Leaf, Download, Image, Link, MoreVertical, MapPin, Bug, Navigation, Eye } from "lucide-react";
+import { Wind, Droplets, Thermometer, Trees, CheckCircle2, MessageCircle, Send, Loader2, Factory, AlertTriangle, ChevronDown, Lightbulb, Info, X, Minimize2, Maximize2, Share2, Check, Map, Shield, Database, ExternalLink, Leaf, Download, Image, Link, MoreVertical, MapPin, Bug, Navigation, Eye, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -813,6 +813,17 @@ export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimi
                 <Image className="w-4 h-4 mr-2" />
                 Share Image
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={async () => {
+                try {
+                  const { generateEnvironmentalReport } = await import("@/lib/generate-report-pdf");
+                  await generateEnvironmentalReport(data, lat ?? 0, lng ?? 0);
+                } catch (err) {
+                  console.error("PDF generation failed:", err);
+                }
+              }}>
+                <FileText className="w-4 h-4 mr-2" />
+                Download Report (PDF)
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -1035,9 +1046,11 @@ export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimi
                 });
                 const pinTypeConfig: Record<string, { icon: typeof MapPin; color: string }> = {
                   pollution: { icon: AlertTriangle, color: "bg-red-100 text-red-800 border-red-200" },
-                  animal: { icon: Bug, color: "bg-green-100 text-green-800 border-green-200" },
-                  trail: { icon: Navigation, color: "bg-amber-100 text-amber-800 border-amber-200" },
-                  other: { icon: Eye, color: "bg-violet-100 text-violet-800 border-violet-200" },
+                  wildlife: { icon: Bug, color: "bg-orange-100 text-orange-800 border-orange-200" },
+                  trail: { icon: Navigation, color: "bg-green-100 text-green-800 border-green-200" },
+                  water: { icon: Droplets, color: "bg-blue-100 text-blue-800 border-blue-200" },
+                  restoration: { icon: Leaf, color: "bg-purple-100 text-purple-800 border-purple-200" },
+                  other: { icon: Eye, color: "bg-gray-100 text-gray-800 border-gray-200" },
                 };
                 return Object.entries(typeCounts).map(([type, count]) => {
                   const config = pinTypeConfig[type] || pinTypeConfig.other;

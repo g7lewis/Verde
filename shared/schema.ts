@@ -9,7 +9,7 @@ export const pins = pgTable("pins", {
   id: serial("id").primaryKey(),
   lat: doublePrecision("lat").notNull(),
   lng: doublePrecision("lng").notNull(),
-  type: text("type").notNull(), // 'pollution', 'animal', 'trail', 'other'
+  type: text("type").notNull(), // 'pollution', 'wildlife', 'trail', 'water', 'restoration', 'other'
   description: text("description").notNull(),
   userId: varchar("user_id"), // FK → users.id, nullable for old pins
   upvotes: integer("upvotes").default(0),
