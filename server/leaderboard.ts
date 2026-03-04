@@ -177,9 +177,12 @@ export async function getPreviousLeaderboard(limit = 20): Promise<LeaderboardEnt
     }));
   }
 
-  // Lazy snapshot: generate and persist
+  // Lazy snapshot: generate and persist if there's data
+  const entries = await getLeaderboard(prevMonth, limit);
+  if (entries.length === 0) return [];
+
   await snapshotMonth(prevMonth);
-  return getPreviousLeaderboard(limit);
+  return entries;
 }
 
 export async function snapshotMonth(month: string): Promise<void> {

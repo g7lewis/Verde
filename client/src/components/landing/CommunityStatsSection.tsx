@@ -13,14 +13,16 @@ const PIN_TYPE_COLORS: Record<string, { color: string; label: string }> = {
 function AnimatedCounter({ target, label, icon: Icon }: { target: number; label: string; icon: any }) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
-  const animated = useRef(false);
+  const animatedFor = useRef(0);
+  const isVisible = useRef(false);
 
   useEffect(() => {
-    if (!ref.current || animated.current) return;
+    if (!ref.current) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !animated.current) {
-          animated.current = true;
+        isVisible.current = entry.isIntersecting;
+        if (entry.isIntersecting && target > 0 && animatedFor.current !== target) {
+          animatedFor.current = target;
           const duration = 1500;
           const start = performance.now();
           const animate = (now: number) => {
@@ -37,6 +39,23 @@ function AnimatedCounter({ target, label, icon: Icon }: { target: number; label:
     );
     observer.observe(ref.current);
     return () => observer.disconnect();
+  }, [target]);
+
+  // If data arrives while already visible, animate immediately
+  useEffect(() => {
+    if (target > 0 && isVisible.current && animatedFor.current !== target) {
+      animatedFor.current = target;
+      const duration = 1500;
+      const start = performance.now();
+      const animate = (now: number) => {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setCount(Math.round(eased * target));
+        if (progress < 1) requestAnimationFrame(animate);
+      };
+      requestAnimationFrame(animate);
+    }
   }, [target]);
 
   return (

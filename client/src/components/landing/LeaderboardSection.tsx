@@ -52,10 +52,11 @@ export function LeaderboardSection() {
   const rest = entries.slice(3, 10);
   const userRank = tab === "current" ? currentData?.userRank : null;
   const monthLabel = currentData?.month
-    ? new Date(currentData.month + "-01").toLocaleDateString("en-US", {
-        month: "long",
-        year: "numeric",
-      })
+    ? (() => {
+        const [year, month] = currentData.month.split("-");
+        const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+        return `${monthNames[parseInt(month, 10) - 1]} ${year}`;
+      })()
     : "";
 
   return (
