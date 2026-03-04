@@ -32,6 +32,8 @@ export function HeroSection() {
   }, []);
 
   const runAnalysis = async (lat: number, lng: number) => {
+    // Validate coordinate ranges
+    if (!isFinite(lat) || !isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
     setIsLoading(true);
     setCoords({ lat, lng });
     try {

@@ -17,6 +17,10 @@ function getGradeHex(score: number): string {
   return "#ef4444";
 }
 
+function sanitizeText(s: string): string {
+  return s.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, "");
+}
+
 function slugify(s: string): string {
   return s
     .toLowerCase()
@@ -91,7 +95,7 @@ export async function generateEnvironmentalReport(
   doc.setTextColor(30, 30, 30);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text(data.location, margin + 70, y + 15);
+  doc.text(sanitizeText(data.location), margin + 70, y + 15);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(12);
   doc.setTextColor(gr, gg, gb);
@@ -168,7 +172,7 @@ export async function generateEnvironmentalReport(
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(60, 60, 60);
-    const summaryLines = doc.splitTextToSize(data.summary, contentW);
+    const summaryLines = doc.splitTextToSize(sanitizeText(data.summary), contentW);
     doc.text(summaryLines, margin, y);
     y += summaryLines.length * 12 + 10;
   }

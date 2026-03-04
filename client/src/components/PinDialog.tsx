@@ -97,6 +97,7 @@ export function PinDialog({ open, onOpenChange, location, onPinCreated }: PinDia
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
+              maxLength={500}
               className="resize-none h-24 rounded-xl border-border bg-background focus:ring-primary/20"
             />
           </div>

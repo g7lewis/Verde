@@ -816,7 +816,7 @@ export function EnvironmentalCard({ data, lat, lng, isLoading, onClose, isMinimi
               <DropdownMenuItem onClick={async () => {
                 try {
                   const { generateEnvironmentalReport } = await import("@/lib/generate-report-pdf");
-                  await generateEnvironmentalReport(data, lat ?? 0, lng ?? 0);
+                  await generateEnvironmentalReport(data as any, lat ?? 0, lng ?? 0);
                 } catch (err) {
                   console.error("PDF generation failed:", err);
                 }
